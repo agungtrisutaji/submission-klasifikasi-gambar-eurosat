@@ -1,0 +1,9 @@
+tensorflow>=2.15.0
+tensorflow-datasets>=4.9.0
+importlib_resources
+numpy
+pandas
+pillow
+matplotlib
+scikit-learn
+tensorflowjs
