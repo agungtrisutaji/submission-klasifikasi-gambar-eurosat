@@ -1,9 +1,10 @@
-tensorflow[and-cuda]>=2.15.0
-tensorflow-datasets>=4.9.0
-tensorflowjs
+protobuf>=6.0.0
+tensorflow
+tensorflow-datasets
+tensorflow-metadata
+Pillow
+matplotlib
 numpy
 pandas
-pillow
-matplotlib
 scikit-learn
 importlib_resources
