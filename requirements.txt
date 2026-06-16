@@ -9,6 +9,13 @@ pandas
 scikit-learn
 importlib_resources
 ipykernel
+tensorflowjs==4.22.0
+tf_keras==2.21.0
+tensorflow-hub==0.16.1
+jax==0.4.34
+jaxlib==0.4.34
+packaging~=23.1
+setuptools<81
 --extra-index-url https://download.pytorch.org/whl/cu121
 torch==2.5.1+cu121
 torchvision==0.20.1+cu121
