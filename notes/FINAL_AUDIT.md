@@ -94,4 +94,4 @@ tflite/
 
 ## Kesimpulan Audit
 
-Repository sudah siap untuk submission dari sisi export model utama: notebook memiliki alur lengkap, dokumentasi menjelaskan dataset sampai export, hasil evaluasi final tersedia, dan export SavedModel/TFLite/TFJS sudah ada. Risiko utama yang tersisa adalah dependency runtime TFJS tidak masuk `requirements.txt` karena file tersebut memang tidak boleh diubah.
+Repository sudah siap untuk submission dari sisi export model utama: notebook memiliki alur lengkap, dokumentasi menjelaskan dataset sampai export, hasil evaluasi final tersedia, dan export SavedModel/TFLite/TFJS sudah ada. Risiko utama yang tersisa adalah dependency runtime TFJS tidak masuk langsung ke `requirements.txt` karena resolver pip menarik `tensorflow-decision-forests` yang bentrok pada Windows/Python 3.12.

@@ -57,12 +57,12 @@
 - [x] TFJS shard `.bin` tersedia.
 - [x] TFJS `label.txt` tersedia dan sama dengan `tflite/label.txt`.
 
-Catatan TFJS: package `tensorflowjs` dan dependency pendukungnya sudah ditambahkan ke `requirements.txt`. Jika menjalankan notebook di environment lama yang belum di-update, install manual dengan `python -m pip install tensorflowjs` sebelum rerun cell **Konversi Model**.
+Catatan TFJS: package `tensorflowjs` tidak dimasukkan langsung ke `requirements.txt` karena pip akan menarik `tensorflow-decision-forests` dan dapat memicu konflik dependency pada Windows/Python 3.12. Jika perlu membuat ulang export TFJS, install manual dengan `python -m pip install --no-deps tensorflowjs==4.22.0` setelah dependency pendukungnya tersedia.
 
 ## Sebelum ZIP
 
 - [ ] Jalankan notebook dari atas ke bawah di environment final.
-- [ ] Jika environment baru belum memiliki `tensorflowjs`, install manual dengan `python -m pip install tensorflowjs` lalu jalankan ulang cell **Konversi Model**.
+- [ ] Jika environment baru belum memiliki `tensorflowjs`, install manual dengan `python -m pip install --no-deps tensorflowjs==4.22.0` lalu jalankan ulang cell **Konversi Model**.
 - [ ] Pastikan folder model export yang diwajibkan Dicoding ikut masuk ZIP.
 - [ ] Jangan masukkan `.venv/`, `dataset/`, `tfds_data/`, atau `outputs/` bila tidak diminta.
 - [ ] Jangan membuat ZIP di dalam ZIP.

@@ -70,5 +70,5 @@ Validasi prediksi:
 ## Limitasi
 
 - Base MobileNetV2 belum di-fine-tune.
-- TFJS export membutuhkan paket `tensorflowjs`; dependency TFJS sudah ditambahkan ke `requirements.txt` tanpa menghapus paket Torch.
+- TFJS export membutuhkan paket `tensorflowjs`; package ini tidak dimasukkan langsung ke `requirements.txt` karena resolver pip menarik `tensorflow-decision-forests` yang bentrok pada Windows/Python 3.12. Torch tetap dipertahankan di `requirements.txt`.
 - Model dilatih pada gambar EuroSAT RGB dan belum divalidasi pada citra satelit dari sumber/domain lain.

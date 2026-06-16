@@ -99,4 +99,4 @@ tfjs/eurosat_classifier/group1-shard*.bin
 tfjs/eurosat_classifier/label.txt
 ```
 
-TFJS export membutuhkan package `tensorflowjs`, tetapi package tersebut tidak ditambahkan ke `requirements.txt` karena file tersebut tidak boleh diubah. Pada run lokal, TFJS berhasil dibuat sebagai graph model dari SavedModel inference-only sementara dengan output signature 10 kelas.
+TFJS export membutuhkan package `tensorflowjs`, tetapi package tersebut tidak dimasukkan langsung ke `requirements.txt` karena resolver pip menarik `tensorflow-decision-forests` yang bentrok pada Windows/Python 3.12. Pada run lokal, TFJS berhasil dibuat sebagai graph model dari SavedModel inference-only sementara dengan output signature 10 kelas.
