@@ -1,57 +1,37 @@
-# PROJECT_CONTEXT.md
+# Project Context
 
 ## Project
 
 Dicoding Submission: Proyek Klasifikasi Gambar
+
 Course: Belajar Fundamental Deep Learning
 
-## Main Notebook
+Dataset final: EuroSAT RGB
+
+Notebook utama:
 
 ```text
 klasifikasi-gambar-eurosat.ipynb
 ```
 
-## Current Project Phase
+## Status Saat Ini
 
-Current phase:
+Project sudah melewati tahap dataset preparation, modelling, training, evaluasi awal, dan export utama.
 
-```text
-02 - Dataset & Struktur Data
-```
+| Area | Status | Catatan |
+| --- | --- | --- |
+| Dataset selected | Done | EuroSAT RGB |
+| Dataset loaded/downloaded | Done | TFDS `eurosat/rgb` dengan mirror Zenodo bila URL bawaan bermasalah |
+| Metadata validated | Done | 27.000 gambar, 10 kelas, RGB 64x64x3 |
+| Train/validation/test split | Done | Stratified per kelas, 80/10/10, seed 42 |
+| Dataset audit | Done | Tidak ada corrupt image atau duplicate cross-split pada run lokal |
+| Modelling | Done | Baseline CNN dan MobileNetV2 transfer learning |
+| Evaluation | Done | Test accuracy run lokal: 0.9148 |
+| Export | Partial | SavedModel dan TFLite berhasil; TFJS perlu paket `tensorflowjs` |
 
-The project must not move to modelling until dataset preparation, split, and audit are complete.
+## Dataset Preparation
 
-## Dataset Decision
-
-Final dataset:
-
-```text
-EuroSAT RGB
-```
-
-Reason:
-
-1. 27,000 images.
-2. 10 classes.
-3. Suitable for multi-class image classification.
-4. Not a prohibited/simple dataset such as Rock Paper Scissors.
-5. Clear source through TensorFlow Datasets and official EuroSAT repository.
-6. Reasonable size for Colab/local experimentation.
-
-## Current Dataset Status
-
-| Area                        |  Status | Notes                                         |
-| --------------------------- | ------: | --------------------------------------------- |
-| Dataset selected            |    Done | EuroSAT RGB                                   |
-| Dataset loaded/downloaded   | Not yet | Must be done in notebook                      |
-| Metadata validated          | Not yet | Need total images, class names, shape, dtype  |
-| Train/validation/test split | Not yet | Use stratified 80/10/10                       |
-| Dataset audit               | Not yet | Check distribution, corrupt files, duplicates |
-| Ready for modelling         |      No | Dataset stage is not complete                 |
-
-## Dataset Preparation Target
-
-Create this structure:
+Struktur dataset lokal yang dibuat notebook:
 
 ```text
 dataset/
@@ -61,31 +41,59 @@ dataset/
 └── test/
 ```
 
-Each split must contain 10 class folders.
-
-## Split Strategy
-
-Use:
+Split:
 
 ```text
-train: 80%
-validation: 10%
-test: 10%
+train: 21.600 images
+validation: 2.700 images
+test: 2.700 images
 seed: 42
 method: stratified per class
 ```
 
-## Audit Outputs
-
-Save:
+Audit output:
 
 ```text
 outputs/dataset_audit/dataset_split_summary.csv
 outputs/dataset_audit/dataset_audit_summary.json
 ```
 
-## Next Action
+## Model
 
-Work only on dataset preparation in `klasifikasi-gambar-eurosat.ipynb`.
+Model yang dibandingkan:
 
-Do not implement modelling, training, evaluation, inference, or export yet.
+1. Baseline CNN.
+2. MobileNetV2 transfer learning dengan base model frozen.
+
+Model kandidat dipilih berdasarkan validation accuracy, bukan test accuracy.
+
+Model terbaik pada run lokal:
+
+```text
+mobilenetv2_transfer_learning
+```
+
+## Evaluation
+
+Ringkasan run lokal:
+
+```text
+best training accuracy: 0.8855
+best validation accuracy: 0.9178
+test accuracy: 0.9148
+test loss: 0.2519
+```
+
+Test set hanya digunakan pada bagian evaluasi akhir dan sample inference.
+
+## Export
+
+Export yang tervalidasi:
+
+```text
+saved_model/eurosat_classifier/
+tflite/eurosat_classifier.tflite
+tflite/label.txt
+```
+
+TFJS export tersedia di notebook, tetapi pada run lokal dilewati karena paket `tensorflowjs` tidak tersedia dan `requirements.txt` tidak boleh diubah.
