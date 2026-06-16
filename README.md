@@ -43,7 +43,7 @@ Notebook menjalankan alur berikut:
 9. Melatih baseline CNN dan MobileNetV2 transfer learning.
 10. Memilih model berdasarkan validation accuracy.
 11. Evaluasi final pada test set.
-12. Export model ke SavedModel dan TFLite, serta TFJS bila paket `tensorflowjs` tersedia.
+12. Export model ke SavedModel, TFLite, dan TFJS.
 
 ## Hasil Evaluasi
 
@@ -75,15 +75,26 @@ Export yang sudah tervalidasi pada run lokal:
 saved_model/eurosat_classifier/
 tflite/eurosat_classifier.tflite
 tflite/label.txt
+tfjs/eurosat_classifier/model.json
+tfjs/eurosat_classifier/group1-shard*.bin
+tfjs/eurosat_classifier/label.txt
 ```
 
 Validasi export:
 
 - SavedModel dapat diload ulang dan menghasilkan prediksi shape `(1, 10)`.
 - TFLite dapat diload dengan interpreter dan menghasilkan prediksi shape `(1, 10)`.
+- TFJS graph model memiliki `model.json`, tiga shard `.bin`, dan output signature 10 kelas.
+- `tfjs/eurosat_classifier/label.txt` sama dengan `tflite/label.txt`.
 - Jumlah probabilitas prediksi mendekati 1.
 
-Catatan TFJS: notebook sudah memiliki cell export TFJS ke folder `tfjs/`, tetapi pada environment lokal terakhir export TFJS dilewati karena paket `tensorflowjs` tidak tersedia. `requirements.txt` sengaja tidak diubah sesuai batasan proyek. Jika format TFJS wajib disertakan, install `tensorflowjs` di environment eksekusi lalu jalankan ulang cell **Konversi Model**.
+Catatan TFJS: dependency TFJS sudah ditambahkan ke `requirements.txt`. Jika menjalankan notebook di environment lama yang belum di-update dan package belum tersedia, jalankan instalasi manual berikut, lalu restart kernel atau rerun cell dependency check:
+
+```bash
+python -m pip install tensorflowjs
+```
+
+Pada environment lokal Windows/Python 3.12 ini, export TFJS paling stabil dilakukan sebagai TFJS graph model dari SavedModel inference-only sementara. Notebook membuat model inference-only tanpa layer augmentation untuk konversi TFJS, memvalidasi bahwa outputnya identik dengan model asli pada mode inference (`max_delta=0.0`), lalu menghasilkan folder `tfjs/eurosat_classifier/`.
 
 ## Cara Menjalankan Notebook
 
@@ -141,6 +152,10 @@ submission-klasifikasi-gambar-eurosat/
 │   └── eurosat_classifier/
 ├── tfds_data/
 ├── tfjs/
+│   └── eurosat_classifier/
+│       ├── model.json
+│       ├── group1-shard*.bin
+│       └── label.txt
 └── tflite/
     ├── eurosat_classifier.tflite
     └── label.txt
