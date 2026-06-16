@@ -4,7 +4,7 @@ Tanggal audit: 2026-06-16
 
 ## Ringkasan
 
-Repository sudah memiliki notebook utama, dataset lokal hasil preparation, checkpoint training, evaluasi akhir, dan export model utama. Audit ini menemukan bahwa README dan dokumentasi pendukung masih minim, serta bagian evaluasi/export/inference di notebook sebelumnya masih kosong. Bagian tersebut sudah dipatch.
+Repository sudah memiliki notebook utama, dataset lokal hasil preparation, checkpoint training, evaluasi akhir, dan export model lengkap. Audit ini menemukan bahwa README dan dokumentasi pendukung masih minim, bagian evaluasi/export/inference di notebook sebelumnya masih kosong, dan TFJS belum tersedia. Bagian tersebut sudah dipatch.
 
 ## Struktur Repository
 
@@ -49,7 +49,7 @@ tflite/
 3. `notes/PROJECT_CONTEXT.md` masih menyatakan fase project berhenti di dataset preparation, padahal notebook sudah berisi modelling.
 4. Cell notebook untuk evaluasi akhir, export model, dan inference masih kosong.
 5. Folder `saved_model/`, `tfjs/`, dan `tflite/` sebelumnya hanya berisi `.gitkeep`.
-6. TFJS export belum bisa dibuat di environment lokal karena paket `tensorflowjs` tidak tersedia.
+6. TFJS export awalnya belum bisa dibuat di environment lokal karena paket `tensorflowjs` belum tersedia.
 
 ## Validasi yang Dilakukan
 
@@ -66,6 +66,11 @@ tflite/
 - Evaluasi model dari checkpoint berhasil dijalankan.
 - SavedModel berhasil dibuat dan diload ulang.
 - TFLite berhasil dibuat dan diload dengan interpreter.
+- TFJS berhasil dibuat ke `tfjs/eurosat_classifier/`.
+- TFJS `model.json` valid JSON.
+- TFJS shard `group1-shard*.bin` tersedia.
+- TFJS `label.txt` sama dengan `tflite/label.txt`.
+- TFJS output signature menunjukkan 10 kelas.
 
 ## Hasil Evaluasi Lokal
 
@@ -85,8 +90,8 @@ tflite/
 | SavedModel | Berhasil | `saved_model/eurosat_classifier/` |
 | TFLite | Berhasil | `tflite/eurosat_classifier.tflite` |
 | Label TFLite | Berhasil | `tflite/label.txt` |
-| TFJS | Perlu rerun dengan `tensorflowjs` | `tfjs/` |
+| TFJS | Berhasil | `tfjs/eurosat_classifier/` |
 
 ## Kesimpulan Audit
 
-Repository sudah jauh lebih siap untuk submission: notebook memiliki alur lengkap, dokumentasi menjelaskan dataset sampai export, dan hasil evaluasi final sudah tersedia. Risiko utama yang masih tersisa adalah export TFJS bila format tersebut diwajibkan oleh instruksi submission yang digunakan.
+Repository sudah siap untuk submission dari sisi export model utama: notebook memiliki alur lengkap, dokumentasi menjelaskan dataset sampai export, hasil evaluasi final tersedia, dan export SavedModel/TFLite/TFJS sudah ada. Risiko utama yang tersisa adalah dependency runtime TFJS tidak masuk `requirements.txt` karena file tersebut memang tidak boleh diubah.

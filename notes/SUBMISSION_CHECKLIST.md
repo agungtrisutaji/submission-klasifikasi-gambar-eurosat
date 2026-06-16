@@ -52,14 +52,17 @@
 - [x] SavedModel berhasil diload ulang untuk validasi prediksi.
 - [x] TFLite berhasil dibuat.
 - [x] TFLite berhasil diload dengan interpreter untuk validasi prediksi.
-- [ ] TFJS berhasil dibuat.
+- [x] TFJS berhasil dibuat.
+- [x] TFJS `model.json` valid JSON.
+- [x] TFJS shard `.bin` tersedia.
+- [x] TFJS `label.txt` tersedia dan sama dengan `tflite/label.txt`.
 
-Catatan TFJS: cell export TFJS tersedia, tetapi run lokal terakhir melewati export TFJS karena paket `tensorflowjs` tidak tersedia dan `requirements.txt` tidak boleh diubah.
+Catatan TFJS: package `tensorflowjs` dan dependency pendukungnya sudah ditambahkan ke `requirements.txt`. Jika menjalankan notebook di environment lama yang belum di-update, install manual dengan `python -m pip install tensorflowjs` sebelum rerun cell **Konversi Model**.
 
 ## Sebelum ZIP
 
 - [ ] Jalankan notebook dari atas ke bawah di environment final.
-- [ ] Jika format TFJS wajib, install `tensorflowjs` di environment eksekusi lalu jalankan ulang cell **Konversi Model**.
+- [ ] Jika environment baru belum memiliki `tensorflowjs`, install manual dengan `python -m pip install tensorflowjs` lalu jalankan ulang cell **Konversi Model**.
 - [ ] Pastikan folder model export yang diwajibkan Dicoding ikut masuk ZIP.
 - [ ] Jangan masukkan `.venv/`, `dataset/`, `tfds_data/`, atau `outputs/` bila tidak diminta.
 - [ ] Jangan membuat ZIP di dalam ZIP.

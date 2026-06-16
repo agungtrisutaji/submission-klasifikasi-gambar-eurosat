@@ -54,16 +54,21 @@ Export yang tervalidasi:
 saved_model/eurosat_classifier/
 tflite/eurosat_classifier.tflite
 tflite/label.txt
+tfjs/eurosat_classifier/model.json
+tfjs/eurosat_classifier/group1-shard*.bin
+tfjs/eurosat_classifier/label.txt
 ```
 
 Validasi prediksi:
 
 - SavedModel prediction shape: `(1, 10)`.
 - TFLite prediction shape: `(1, 10)`.
+- TFJS output classes: `10`.
+- TFJS inference source model max delta terhadap model asli pada mode inference: `0.0`.
 - Jumlah probabilitas prediksi mendekati 1.
 
 ## Limitasi
 
 - Base MobileNetV2 belum di-fine-tune.
-- TFJS export membutuhkan paket `tensorflowjs`; paket tersebut tidak ditambahkan ke `requirements.txt` karena file tersebut sengaja tidak boleh diubah.
+- TFJS export membutuhkan paket `tensorflowjs`; dependency TFJS sudah ditambahkan ke `requirements.txt` tanpa menghapus paket Torch.
 - Model dilatih pada gambar EuroSAT RGB dan belum divalidasi pada citra satelit dari sumber/domain lain.

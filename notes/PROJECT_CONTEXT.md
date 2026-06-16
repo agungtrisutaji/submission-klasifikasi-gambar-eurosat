@@ -27,7 +27,7 @@ Project sudah melewati tahap dataset preparation, modelling, training, evaluasi 
 | Dataset audit | Done | Tidak ada corrupt image atau duplicate cross-split pada run lokal |
 | Modelling | Done | Baseline CNN dan MobileNetV2 transfer learning |
 | Evaluation | Done | Test accuracy run lokal: 0.9148 |
-| Export | Partial | SavedModel dan TFLite berhasil; TFJS perlu paket `tensorflowjs` |
+| Export | Done | SavedModel, TFLite, dan TFJS berhasil dibuat dan divalidasi |
 
 ## Dataset Preparation
 
@@ -94,6 +94,9 @@ Export yang tervalidasi:
 saved_model/eurosat_classifier/
 tflite/eurosat_classifier.tflite
 tflite/label.txt
+tfjs/eurosat_classifier/model.json
+tfjs/eurosat_classifier/group1-shard*.bin
+tfjs/eurosat_classifier/label.txt
 ```
 
-TFJS export tersedia di notebook, tetapi pada run lokal dilewati karena paket `tensorflowjs` tidak tersedia dan `requirements.txt` tidak boleh diubah.
+TFJS export membutuhkan package `tensorflowjs`, tetapi package tersebut tidak ditambahkan ke `requirements.txt` karena file tersebut tidak boleh diubah. Pada run lokal, TFJS berhasil dibuat sebagai graph model dari SavedModel inference-only sementara dengan output signature 10 kelas.
