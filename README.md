@@ -88,10 +88,11 @@ Validasi export:
 - `tfjs/eurosat_classifier/label.txt` sama dengan `tflite/label.txt`.
 - Jumlah probabilitas prediksi mendekati 1.
 
-Catatan TFJS: dependency TFJS sudah ditambahkan ke `requirements.txt`. Jika menjalankan notebook di environment lama yang belum di-update dan package belum tersedia, jalankan instalasi manual berikut, lalu restart kernel atau rerun cell dependency check:
+Catatan TFJS: `tensorflowjs` tidak dimasukkan langsung ke `requirements.txt` karena pip akan menarik `tensorflow-decision-forests` dan dapat memicu konflik dependency pada Windows/Python 3.12. Jika perlu membuat ulang export TFJS, install converter secara manual dengan dependency resolver dimatikan untuk package `tensorflowjs`:
 
 ```bash
-python -m pip install tensorflowjs
+python -m pip install tf_keras==2.21.0 tensorflow-hub==0.16.1 jax==0.4.34 jaxlib==0.4.34 "packaging~=23.1" "setuptools<81"
+python -m pip install --no-deps tensorflowjs==4.22.0
 ```
 
 Pada environment lokal Windows/Python 3.12 ini, export TFJS paling stabil dilakukan sebagai TFJS graph model dari SavedModel inference-only sementara. Notebook membuat model inference-only tanpa layer augmentation untuk konversi TFJS, memvalidasi bahwa outputnya identik dengan model asli pada mode inference (`max_delta=0.0`), lalu menghasilkan folder `tfjs/eurosat_classifier/`.
