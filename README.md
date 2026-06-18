@@ -6,6 +6,55 @@
 
 Repository ini berisi submission Dicoding untuk proyek klasifikasi gambar pada kelas **Belajar Fundamental Deep Learning**. Tujuannya adalah membangun pipeline image classification yang rapi, reproducible, dan mudah diperiksa reviewer dari tahap dataset sampai export model.
 
+## Eksperimen Open Images IT Asset
+
+Branch `experiment/open-images-it-assets` memiliki builder awal untuk membuat subset eksplorasi kecil dari Open Images V7. Tahap ini hanya memvalidasi download, bounding box, crop objek, metadata, dan audit dataset. Belum ada training dan belum ada export ulang model.
+
+Script yang tersedia:
+
+```text
+src/build_openimages_subset.py
+src/audit_openimages_subset.py
+```
+
+Kelas target awal:
+
+| Open Images class | Label lokal |
+| --- | --- |
+| Laptop | `laptop` |
+| Computer keyboard | `computer_keyboard` |
+| Computer mouse | `computer_mouse` |
+| Mobile phone | `mobile_phone` |
+| Printer | `printer` |
+
+Jalankan builder eksplorasi dari root repository:
+
+```powershell
+python src/build_openimages_subset.py --target-crops-per-class 150 --max-samples-per-class 500 --source-splits train --overwrite
+```
+
+Output builder:
+
+```text
+dataset/raw/<label_local>/
+dataset/metadata/openimages_crop_metadata.csv
+```
+
+Jalankan audit:
+
+```powershell
+python src/audit_openimages_subset.py --min-crops-per-class 100
+```
+
+Output audit:
+
+```text
+outputs/dataset_audit/openimages_subset_audit.json
+outputs/dataset_audit/openimages_resolution_summary.csv
+```
+
+Folder `dataset/`, `openimages_data/`, `fiftyone/`, dan `outputs/` di-ignore oleh git. Jangan lanjut ke split final atau modelling sebelum audit eksplorasi menunjukkan crop valid, resolusi tidak seragam, duplicate/corrupt terkendali, dan kelas target cukup seimbang.
+
 Notebook utama:
 
 ```text
