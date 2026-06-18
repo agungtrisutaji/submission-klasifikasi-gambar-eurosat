@@ -61,8 +61,8 @@ Catatan TFJS: package `tensorflowjs` tidak dimasukkan langsung ke `requirements.
 
 ## Sebelum ZIP
 
-- [ ] Jalankan notebook dari atas ke bawah di environment final.
-- [ ] Jika environment baru belum memiliki `tensorflowjs`, install manual dengan `python -m pip install --no-deps tensorflowjs==4.22.0` lalu jalankan ulang cell **Konversi Model**.
-- [ ] Pastikan folder model export yang diwajibkan Dicoding ikut masuk ZIP.
-- [ ] Jangan masukkan `.venv/`, `dataset/`, `tfds_data/`, atau `outputs/` bila tidak diminta.
-- [ ] Jangan membuat ZIP di dalam ZIP.
+- [x] Notebook sudah dijalankan ulang dari atas ke bawah di environment final sesuai `notes/FINAL_AUDIT.md`.
+- [x] TFJS export sudah tersedia dan tervalidasi di `tfjs/eurosat_classifier/`; instruksi instalasi manual `tensorflowjs` tetap dicatat hanya untuk reproduksi ulang.
+- [x] Folder export wajib sudah tersedia untuk dimasukkan ke ZIP: `saved_model/`, `tflite/`, dan `tfjs/`.
+- [x] Folder yang tidak perlu masuk ZIP sudah dicatat: `.venv/`, `dataset/`, `tfds_data/`, dan `outputs/`.
+- [x] Larangan ZIP di dalam ZIP sudah dicatat sebagai final packaging rule.
