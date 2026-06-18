@@ -1,5 +1,9 @@
 # Submission Klasifikasi Gambar EuroSAT
 
+> Branch eksperimen: `experiment/open-images-it-assets`.
+>
+> Branch ini sedang menyiapkan migrasi aman dari **EuroSAT RGB** ke **Open Images V7 IT Asset Subset**. Notebook EuroSAT lama tetap dipertahankan sebagai baseline stabil, sedangkan template migrasi awal disiapkan di `klasifikasi-gambar-it-assets.ipynb`. Rencana dataset dan catatan lisensi ada di `notes/OPEN_IMAGES_SUBSET_PLAN.md` dan `notes/DATASET_LICENSE.md`.
+
 Repository ini berisi submission Dicoding untuk proyek klasifikasi gambar pada kelas **Belajar Fundamental Deep Learning**. Tujuannya adalah membangun pipeline image classification yang rapi, reproducible, dan mudah diperiksa reviewer dari tahap dataset sampai export model.
 
 Notebook utama:
