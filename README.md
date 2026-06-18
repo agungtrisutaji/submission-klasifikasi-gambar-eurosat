@@ -15,6 +15,8 @@ Script yang tersedia:
 ```text
 src/build_openimages_subset.py
 src/audit_openimages_subset.py
+src/split_openimages_subset.py
+src/audit_openimages_split.py
 configs/openimages_it_assets_classes.json
 ```
 
@@ -60,7 +62,29 @@ outputs/dataset_audit/openimages_subset_audit.json
 outputs/dataset_audit/openimages_resolution_summary.csv
 ```
 
-Folder `dataset/`, `openimages_data/`, `fiftyone/`, dan `outputs/` di-ignore oleh git. Dataset Camera sudah memenuhi full-scale criteria, tetapi split final belum dibuat. Tahap berikutnya adalah membuat split lokal dan audit leakage sebelum modelling.
+Split lokal train/validation/test sudah dibuat dengan group split berdasarkan `source_image_id` untuk mencegah leakage. Hasil audit split:
+
+| Split | Total |
+| --- | ---: |
+| Train | 8.006 |
+| Validation | 994 |
+| Test | 1.000 |
+
+Source image leakage across split `0`, duplicate hash across split `0`, corrupt image count `0`, missing split crop file count `0`, dan `ready_for_modelling = true`.
+
+Command split:
+
+```powershell
+.\.venv\Scripts\python.exe src\split_openimages_subset.py --class-config configs\openimages_it_assets_classes.json --metadata-path dataset\metadata\openimages_crop_metadata.csv --raw-dir dataset\raw --split-dir dataset --train-ratio 0.8 --validation-ratio 0.1 --test-ratio 0.1 --seed 42 --overwrite
+```
+
+Command audit split:
+
+```powershell
+.\.venv\Scripts\python.exe src\audit_openimages_split.py --class-config configs\openimages_it_assets_classes.json
+```
+
+Folder `dataset/`, `openimages_data/`, `fiftyone/`, dan `outputs/` di-ignore oleh git. Modelling boleh mulai setelah audit split ini, dengan catatan test set hanya untuk evaluasi final dan tidak boleh dipakai untuk training, tuning, callback, checkpoint selection, atau model selection.
 
 Notebook utama:
 
