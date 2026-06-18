@@ -1,10 +1,10 @@
 # Final Audit
 
-Tanggal audit: 2026-06-16
+Tanggal audit: 2026-06-18
 
 ## Ringkasan
 
-Repository sudah memiliki notebook utama, dataset lokal hasil preparation, checkpoint training, evaluasi akhir, dan export model lengkap. Audit ini menemukan bahwa README dan dokumentasi pendukung masih minim, bagian evaluasi/export/inference di notebook sebelumnya masih kosong, dan TFJS belum tersedia. Bagian tersebut sudah dipatch.
+Repository sudah memiliki notebook utama, dataset lokal hasil preparation, checkpoint training, evaluasi akhir, dan export model lengkap. Notebook sudah dijalankan ulang dengan kernel `.venv` Python 3.12, lalu export SavedModel, TFLite, dan TFJS divalidasi terhadap file aktual di workspace.
 
 ## Struktur Repository
 
@@ -44,17 +44,14 @@ tflite/
 
 ## Masalah yang Ditemukan
 
-1. `README.md` sebelumnya hanya menjelaskan dataset secara singkat.
-2. `notes/DATASET_DECISION.md` dan `notes/SUBMISSION_CHECKLIST.md` masih kosong.
-3. `notes/PROJECT_CONTEXT.md` masih menyatakan fase project berhenti di dataset preparation, padahal notebook sudah berisi modelling.
-4. Cell notebook untuk evaluasi akhir, export model, dan inference masih kosong.
-5. Folder `saved_model/`, `tfjs/`, dan `tflite/` sebelumnya hanya berisi `.gitkeep`.
-6. TFJS export awalnya belum bisa dibuat di environment lokal karena paket `tensorflowjs` belum tersedia.
+1. TFJS pre-built export sempat tidak ada di folder `tfjs/eurosat_classifier/`.
+2. Output notebook sempat menyimpan status TFJS `failed` akibat stub `tensorflow_decision_forests` tanpa `__spec__`.
+3. `requirements.txt` tetap tidak boleh dipakai untuk menambahkan `tensorflowjs` karena resolver pip dapat menarik dependency yang konflik pada Windows/Python 3.12.
 
 ## Validasi yang Dilakukan
 
 - Tidak ada output error tersimpan di notebook.
-- `requirements.txt` tidak diubah.
+- `requirements.txt` tidak diubah pada validasi akhir ini.
 - Dataset audit lokal menunjukkan:
   - total raw images: 27.000;
   - train images: 21.600;
@@ -71,6 +68,7 @@ tflite/
 - TFJS shard `group1-shard*.bin` tersedia.
 - TFJS `label.txt` sama dengan `tflite/label.txt`.
 - TFJS output signature menunjukkan 10 kelas.
+- `tfjs/eurosat_classifier/label.txt` sama persis dengan `tflite/label.txt`.
 
 ## Hasil Evaluasi Lokal
 
