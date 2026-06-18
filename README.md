@@ -28,9 +28,9 @@ Kombinasi kandidat berikutnya disimpan di class config:
 | Computer keyboard | `computer_keyboard` |
 | Mobile phone | `mobile_phone` |
 | Computer monitor | `computer_monitor` |
-| Headphones | `headphones` |
+| Camera | `camera` |
 
-Kandidat cadangan di config: `tablet_computer`, `camera`, `television`, `server`, dan `remote_control`. Catatan: `Server` masih perlu validasi label Open Images sebelum dipromosikan ke kombinasi kelas utama.
+Feasibility pengganti dengan `headphones` juga belum layak karena hanya menghasilkan 1.241 crop dari target 2.000. Config saat ini mengganti `headphones` dengan `camera` untuk rerun berikutnya. Kandidat cadangan di config: `tablet_computer`, `television`, `server`, dan `remote_control`. Catatan: `Server` masih perlu validasi label Open Images sebelum dipromosikan ke kombinasi kelas utama.
 
 Jalankan builder feasibility kandidat baru dari root repository:
 
