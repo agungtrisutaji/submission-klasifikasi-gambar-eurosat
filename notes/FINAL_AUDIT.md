@@ -4,7 +4,7 @@ Tanggal audit: 2026-06-18
 
 ## Ringkasan
 
-Repository sudah memiliki notebook utama, dataset lokal hasil preparation, checkpoint training, evaluasi akhir, dan export model lengkap. Notebook sudah dijalankan ulang dengan kernel `.venv` Python 3.12, lalu export SavedModel, TFLite, dan TFJS divalidasi terhadap file aktual di workspace.
+Repository sudah memiliki notebook utama, dataset lokal hasil preparation, checkpoint training, evaluasi akhir, dan export model lengkap. Model final memakai EuroSAT RGB dengan MobileNetV2 fine-tuning. Export SavedModel, TFLite, dan TFJS sudah diregenerasi dari checkpoint fine-tuned serta divalidasi terhadap file aktual di workspace.
 
 ## Struktur Repository
 
@@ -47,6 +47,7 @@ tflite/
 1. TFJS pre-built export sempat tidak ada di folder `tfjs/eurosat_classifier/`.
 2. Output notebook sempat menyimpan status TFJS `failed` akibat stub `tensorflow_decision_forests` tanpa `__spec__`.
 3. `requirements.txt` tetap tidak boleh dipakai untuk menambahkan `tensorflowjs` karena resolver pip dapat menarik dependency yang konflik pada Windows/Python 3.12.
+4. EuroSAT RGB memiliki resolusi asli seragam `64x64x3`, sehingga saran bintang 5 tentang resolusi asli tidak seragam tidak diklaim terpenuhi.
 
 ## Validasi yang Dilakukan
 
@@ -55,6 +56,7 @@ tflite/
 - Dependency PyTorch CUDA di `requirements.txt` sengaja tetap dipertahankan sesuai kondisi proyek.
 - Angka evaluasi dokumentasi sudah disinkronkan dengan output notebook terbaru.
 - Output notebook sudah dibersihkan dari path lokal pribadi dan warning yang tidak relevan.
+- Model fine-tuned dipilih memakai validation accuracy; test set hanya digunakan untuk evaluasi final dan inference proof.
 - Dataset audit lokal menunjukkan:
   - total raw images: 27.000;
   - train images: 21.600;
@@ -77,11 +79,11 @@ tflite/
 
 | Metrik | Nilai |
 | --- | ---: |
-| Model terpilih | `mobilenetv2_transfer_learning` |
-| Best training accuracy | 0.8855 |
-| Best validation accuracy | 0.9178 |
-| Test accuracy | 0.9196 |
-| Test loss | 0.2490 |
+| Model terpilih | `mobilenetv2_finetuned` |
+| Train accuracy checkpoint | 0.9562 |
+| Validation accuracy checkpoint | 0.9396 |
+| Test accuracy | 0.9448 |
+| Test loss | 0.1753 |
 | Test samples | 2.700 |
 
 ## Status Export
@@ -95,4 +97,4 @@ tflite/
 
 ## Kesimpulan Audit
 
-Repository sudah siap untuk submission dari sisi export model utama: notebook memiliki alur lengkap, dokumentasi menjelaskan dataset sampai export, hasil evaluasi final tersedia, output notebook sudah dibersihkan, dan export SavedModel/TFLite/TFJS sudah ada. Risiko utama yang tersisa adalah dependency runtime TFJS tidak masuk langsung ke `requirements.txt` karena resolver pip menarik `tensorflow-decision-forests` yang bentrok pada Windows/Python 3.12.
+Repository sudah siap untuk submission dari sisi kriteria wajib: notebook memiliki alur lengkap, dokumentasi menjelaskan dataset sampai export, hasil evaluasi final tersedia, output notebook sudah dibersihkan, dan export SavedModel/TFLite/TFJS sudah ada. Risiko utama untuk bintang 5 adalah test accuracy run penuh final `0.9448`, masih sedikit di bawah saran 95%, serta EuroSAT RGB memiliki resolusi asli seragam.

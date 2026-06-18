@@ -31,6 +31,7 @@
 - [x] Data augmentation hanya digunakan pada training flow.
 - [x] Baseline CNN tersedia.
 - [x] Improved model berbasis MobileNetV2 transfer learning tersedia.
+- [x] Fine-tuning sebagian layer atas MobileNetV2 tersedia.
 - [x] Callback EarlyStopping tersedia.
 - [x] Callback ModelCheckpoint tersedia.
 - [x] Callback ReduceLROnPlateau tersedia.
@@ -42,7 +43,9 @@
 - [x] Test set tidak dipakai untuk training/tuning.
 - [x] Test accuracy dihitung.
 - [x] Test loss dihitung.
-- [x] Angka evaluasi dokumentasi sudah disinkronkan dengan output notebook terbaru: test accuracy `0.9196`, test loss `0.2490`, test samples `2.700`.
+- [x] Angka evaluasi dokumentasi sudah disinkronkan dengan output notebook terbaru: train accuracy `0.9562`, validation accuracy `0.9396`, test accuracy `0.9448`, test loss `0.1753`, test samples `2.700`.
+- [x] Test accuracy sudah melampaui kriteria wajib 85%, tetapi belum mencapai saran bintang 5 95% pada run penuh final.
+- [x] Dataset EuroSAT RGB dicatat memiliki resolusi asli seragam `64x64x3`; saran resolusi tidak seragam tidak diklaim terpenuhi.
 - [x] Confusion matrix dibuat.
 - [x] Classification report dibuat.
 - [x] Sample inference dibuat.
