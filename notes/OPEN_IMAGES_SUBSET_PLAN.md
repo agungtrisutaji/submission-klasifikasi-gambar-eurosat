@@ -38,7 +38,7 @@ Scope tahap ini:
 
 Full-scale feasibility awal dengan `Laptop`, `Computer keyboard`, `Computer mouse`, `Mobile phone`, dan `Printer` gagal untuk target 2.000 crop per kelas. `computer_mouse` hanya mencapai 724 crop dan `printer` hanya mencapai 262 crop dari source split `train`, sehingga dua kelas tersebut tidak dipakai sebagai kandidat final saat ini. Ringkasan keputusan ada di `notes/OPEN_IMAGES_FULL_SCALE_FEASIBILITY.md`.
 
-Eksperimen berikutnya memakai class config agar kombinasi kelas dapat diganti tanpa mengedit source code.
+Feasibility pengganti dengan `Headphones` juga gagal karena hanya mencapai 1.241 crop dari target 2.000. Ringkasan hasilnya ada di `notes/OPEN_IMAGES_REPLACEMENT_FEASIBILITY.md`. Eksperimen berikutnya memakai class config dengan `Camera` sebagai pengganti `Headphones` agar kombinasi kelas dapat diuji tanpa mengedit source code.
 
 Output eksplorasi berada pada folder yang di-ignore git:
 
@@ -115,14 +115,20 @@ Kelas kandidat berikutnya di `configs/openimages_it_assets_classes.json`:
 | `computer_keyboard` | Computer keyboard |
 | `mobile_phone` | Mobile phone |
 | `computer_monitor` | Computer monitor |
-| `headphones` | Headphones |
+| `camera` | Camera |
+
+Kelas yang ditolak atau ditunda:
+
+| Label target | Status |
+| --- | --- |
+| `headphones` | Ditolak sementara, hanya 1.241 crop dari target 2.000 |
+| `server` | Ditunda, label boxable persis `Server` belum ditemukan di metadata lokal |
 
 Kelas cadangan bila jumlah sample, kualitas crop, atau separabilitas kelas kandidat kurang baik:
 
 | Label target | Open Images class |
 | --- | --- |
 | `tablet_computer` | Tablet computer |
-| `camera` | Camera |
 | `television` | Television |
 | `server` | Server |
 | `remote_control` | Remote control |
