@@ -10,7 +10,7 @@ klasifikasi-gambar-eurosat.ipynb
 
 ## Dataset
 
-Dataset yang digunakan adalah **EuroSAT RGB**, berisi 27.000 citra satelit Sentinel-2 RGB dengan 10 kelas dan resolusi asli 64x64x3.
+Dataset yang digunakan tetap **EuroSAT RGB**, berisi 27.000 citra satelit Sentinel-2 RGB dengan 10 kelas dan resolusi asli 64x64x3.
 
 Sumber dataset:
 
@@ -28,6 +28,8 @@ TFDS hanya menyediakan split awal `train`, sehingga notebook membuat split ekspl
 
 Split dibuat stratified per kelas dengan random seed `42`. Test set tidak digunakan untuk training, tuning, callback, checkpoint selection, atau pemilihan model.
 
+Catatan bintang 5: EuroSAT memenuhi syarat jumlah gambar, jumlah kelas, dan bukan dataset latihan Dicoding, tetapi resolusi asli dataset ini seragam (`64x64x3`). Karena itu, submission tidak mengklaim memenuhi saran "gambar asli memiliki resolusi tidak seragam". Dataset tidak diganti karena pipeline EuroSAT sudah kuat, reproducible, dan bebas data leakage, meskipun test accuracy run penuh final belum mencapai 95%.
+
 ## Ringkasan Metode
 
 Notebook menjalankan alur berikut:
@@ -40,10 +42,11 @@ Notebook menjalankan alur berikut:
 6. Audit dataset untuk distribusi kelas, format, mode, resolusi, file corrupt, duplikasi dalam split, dan duplikasi antar split.
 7. Membuat pipeline `tf.data` untuk train, validation, dan test.
 8. Menerapkan data augmentation hanya di alur training melalui layer Keras.
-9. Melatih baseline CNN dan MobileNetV2 transfer learning.
+9. Melatih baseline CNN Sequential dan MobileNetV2 transfer learning.
 10. Memilih model berdasarkan validation accuracy.
-11. Evaluasi final pada test set.
-12. Export model ke SavedModel, TFLite, dan TFJS.
+11. Melakukan fine-tuning sebagian layer atas MobileNetV2 dengan learning rate kecil.
+12. Evaluasi final pada test set.
+13. Export model ke SavedModel, TFLite, dan TFJS.
 
 ## Hasil Evaluasi
 
@@ -51,12 +54,11 @@ Run lokal terakhir memakai model terbaik berdasarkan validation set:
 
 | Metrik | Nilai |
 | --- | ---: |
-| Model terpilih | `mobilenetv2_transfer_learning` |
-| Best training accuracy | 0.8855 |
-| Best validation accuracy | 0.9178 |
-| Validation loss checkpoint | 0.2421 |
-| Test accuracy | 0.9196 |
-| Test loss | 0.2490 |
+| Model terpilih | `mobilenetv2_finetuned` |
+| Train accuracy checkpoint | 0.9562 |
+| Validation accuracy checkpoint | 0.9396 |
+| Test accuracy | 0.9448 |
+| Test loss | 0.1753 |
 | Jumlah sampel test | 2.700 |
 
 Artefak evaluasi dihasilkan ke:
