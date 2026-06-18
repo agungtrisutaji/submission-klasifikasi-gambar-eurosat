@@ -55,8 +55,8 @@ Run lokal terakhir memakai model terbaik berdasarkan validation set:
 | Best training accuracy | 0.8855 |
 | Best validation accuracy | 0.9178 |
 | Validation loss checkpoint | 0.2421 |
-| Test accuracy | 0.9148 |
-| Test loss | 0.2519 |
+| Test accuracy | 0.9196 |
+| Test loss | 0.2490 |
 | Jumlah sampel test | 2.700 |
 
 Artefak evaluasi dihasilkan ke:
