@@ -34,10 +34,16 @@ env.bak/
 venv.bak/
 
 # Jupyter Notebook
-.ipynb_checkpoints
+.ipynb_checkpoints/
 */.ipynb_checkpoints/*
 
-# Dataset & TFDS data (EuroSAT images are downloaded/generated here)
+# Dataset, Open Images cache, and run outputs
 dataset/
+openimages_data/
+fiftyone/
 tfds_data/
 outputs/
+
+# Archives
+*.zip
+*.rar
