@@ -22,6 +22,7 @@ Tahap builder eksplorasi sudah disiapkan melalui script lokal:
 ```text
 src/build_openimages_subset.py
 src/audit_openimages_subset.py
+configs/openimages_it_assets_classes.json
 ```
 
 Scope tahap ini:
@@ -35,6 +36,10 @@ Scope tahap ini:
 - belum training;
 - belum export ulang SavedModel, TFLite, atau TFJS.
 
+Full-scale feasibility awal dengan `Laptop`, `Computer keyboard`, `Computer mouse`, `Mobile phone`, dan `Printer` gagal untuk target 2.000 crop per kelas. `computer_mouse` hanya mencapai 724 crop dan `printer` hanya mencapai 262 crop dari source split `train`, sehingga dua kelas tersebut tidak dipakai sebagai kandidat final saat ini. Ringkasan keputusan ada di `notes/OPEN_IMAGES_FULL_SCALE_FEASIBILITY.md`.
+
+Eksperimen berikutnya memakai class config agar kombinasi kelas dapat diganti tanpa mengedit source code.
+
 Output eksplorasi berada pada folder yang di-ignore git:
 
 ```text
@@ -46,13 +51,13 @@ outputs/
 Cara menjalankan builder eksplorasi:
 
 ```powershell
-python src/build_openimages_subset.py --target-crops-per-class 150 --max-samples-per-class 500 --source-splits train --overwrite
+.\.venv\Scripts\python.exe src\build_openimages_subset.py --class-config configs\openimages_it_assets_classes.json --target-crops-per-class 2000 --max-samples-per-class 5000 --source-splits train --overwrite
 ```
 
 Cara menjalankan audit:
 
 ```powershell
-python src/audit_openimages_subset.py --min-crops-per-class 100
+.\.venv\Scripts\python.exe src\audit_openimages_subset.py --class-config configs\openimages_it_assets_classes.json --min-crops-per-class 2000
 ```
 
 Output audit:
@@ -62,7 +67,7 @@ outputs/dataset_audit/openimages_subset_audit.json
 outputs/dataset_audit/openimages_resolution_summary.csv
 ```
 
-Jika audit belum lolos, ubah parameter eksplorasi seperti `--max-samples-per-class`, `--target-crops-per-class`, atau `--source-splits` sebelum lanjut ke full scale.
+Jika audit belum lolos, ubah kombinasi kelas di `configs/openimages_it_assets_classes.json` atau ubah parameter eksplorasi seperti `--max-samples-per-class`, `--target-crops-per-class`, atau `--source-splits` sebelum lanjut ke full scale.
 
 ## Rencana migrasi identitas project
 
@@ -82,7 +87,7 @@ Untuk tahap awal, notebook dan export EuroSAT lama tidak dihapus. Notebook baru 
 
 ## Kandidat kelas
 
-Kelas utama:
+Kelas awal yang sudah diuji:
 
 | Label target | Open Images class |
 | --- | --- |
@@ -92,14 +97,37 @@ Kelas utama:
 | `mobile_phone` | Mobile phone |
 | `printer` | Printer |
 
-Kelas cadangan bila jumlah sample, kualitas crop, atau separabilitas kelas utama kurang baik:
+Status kelas awal:
+
+| Label target | Status |
+| --- | --- |
+| `laptop` | Pass feasibility awal |
+| `computer_keyboard` | Pass feasibility awal |
+| `computer_mouse` | Ditolak sementara, hanya 724 crop dari target 2.000 |
+| `mobile_phone` | Pass feasibility awal |
+| `printer` | Ditolak sementara, hanya 262 crop dari target 2.000 |
+
+Kelas kandidat berikutnya di `configs/openimages_it_assets_classes.json`:
+
+| Label target | Open Images class |
+| --- | --- |
+| `laptop` | Laptop |
+| `computer_keyboard` | Computer keyboard |
+| `mobile_phone` | Mobile phone |
+| `computer_monitor` | Computer monitor |
+| `headphones` | Headphones |
+
+Kelas cadangan bila jumlah sample, kualitas crop, atau separabilitas kelas kandidat kurang baik:
 
 | Label target | Open Images class |
 | --- | --- |
 | `tablet_computer` | Tablet computer |
-| `computer_monitor` | Computer monitor |
-| `headphones` | Headphones |
 | `camera` | Camera |
+| `television` | Television |
+| `server` | Server |
+| `remote_control` | Remote control |
+
+Catatan: `Server` disimpan sebagai kandidat pengganti, tetapi cache class descriptions Open Images lokal di workspace ini belum menunjukkan label boxable persis `Server`. Validasi nama kelas Open Images perlu dilakukan sebelum `server` dipromosikan ke daftar `classes` utama.
 
 Keputusan final kelas harus dibuat setelah audit jumlah bounding box, ukuran objek, variasi resolusi, dan overlap antar kelas.
 

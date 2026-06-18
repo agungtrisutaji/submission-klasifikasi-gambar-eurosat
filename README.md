@@ -15,22 +15,27 @@ Script yang tersedia:
 ```text
 src/build_openimages_subset.py
 src/audit_openimages_subset.py
+configs/openimages_it_assets_classes.json
 ```
 
-Kelas target awal:
+Feasibility awal dengan kelas `Laptop`, `Computer keyboard`, `Computer mouse`, `Mobile phone`, dan `Printer` sudah dijalankan untuk target 2.000 crop per kelas. Hasilnya belum layak untuk dataset final karena `computer_mouse` hanya mencapai 724 crop dan `printer` hanya mencapai 262 crop dari source split `train`. Dua kelas tersebut tidak dipakai sebagai kandidat final saat ini.
+
+Kombinasi kandidat berikutnya disimpan di class config:
 
 | Open Images class | Label lokal |
 | --- | --- |
 | Laptop | `laptop` |
 | Computer keyboard | `computer_keyboard` |
-| Computer mouse | `computer_mouse` |
 | Mobile phone | `mobile_phone` |
-| Printer | `printer` |
+| Computer monitor | `computer_monitor` |
+| Headphones | `headphones` |
 
-Jalankan builder eksplorasi dari root repository:
+Kandidat cadangan di config: `tablet_computer`, `camera`, `television`, `server`, dan `remote_control`. Catatan: `Server` masih perlu validasi label Open Images sebelum dipromosikan ke kombinasi kelas utama.
+
+Jalankan builder feasibility kandidat baru dari root repository:
 
 ```powershell
-python src/build_openimages_subset.py --target-crops-per-class 150 --max-samples-per-class 500 --source-splits train --overwrite
+.\.venv\Scripts\python.exe src\build_openimages_subset.py --class-config configs\openimages_it_assets_classes.json --target-crops-per-class 2000 --max-samples-per-class 5000 --source-splits train --overwrite
 ```
 
 Output builder:
@@ -43,7 +48,7 @@ dataset/metadata/openimages_crop_metadata.csv
 Jalankan audit:
 
 ```powershell
-python src/audit_openimages_subset.py --min-crops-per-class 100
+.\.venv\Scripts\python.exe src\audit_openimages_subset.py --class-config configs\openimages_it_assets_classes.json --min-crops-per-class 2000
 ```
 
 Output audit:
@@ -53,7 +58,7 @@ outputs/dataset_audit/openimages_subset_audit.json
 outputs/dataset_audit/openimages_resolution_summary.csv
 ```
 
-Folder `dataset/`, `openimages_data/`, `fiftyone/`, dan `outputs/` di-ignore oleh git. Jangan lanjut ke split final atau modelling sebelum audit eksplorasi menunjukkan crop valid, resolusi tidak seragam, duplicate/corrupt terkendali, dan kelas target cukup seimbang.
+Folder `dataset/`, `openimages_data/`, `fiftyone/`, dan `outputs/` di-ignore oleh git. Jangan lanjut ke split final atau modelling sebelum kombinasi kelas baru memenuhi full-scale criteria: total crop minimal 10.000, setiap kelas minimal 2.000 crop, resolusi crop tidak seragam, corrupt image nol atau sudah dikeluarkan, duplicate/cross-class duplicate sudah direview, dan `ready_for_full_scale_dataset_build` bernilai `true`.
 
 Notebook utama:
 

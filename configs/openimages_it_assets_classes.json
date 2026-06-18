@@ -1,0 +1,46 @@
+{
+  "classes": [
+    {
+      "openimages_label": "Laptop",
+      "local_label": "laptop"
+    },
+    {
+      "openimages_label": "Computer keyboard",
+      "local_label": "computer_keyboard"
+    },
+    {
+      "openimages_label": "Mobile phone",
+      "local_label": "mobile_phone"
+    },
+    {
+      "openimages_label": "Computer monitor",
+      "local_label": "computer_monitor"
+    },
+    {
+      "openimages_label": "Headphones",
+      "local_label": "headphones"
+    }
+  ],
+  "candidate_replacements": [
+    {
+      "openimages_label": "Tablet computer",
+      "local_label": "tablet_computer"
+    },
+    {
+      "openimages_label": "Camera",
+      "local_label": "camera"
+    },
+    {
+      "openimages_label": "Television",
+      "local_label": "television"
+    },
+    {
+      "openimages_label": "Server",
+      "local_label": "server"
+    },
+    {
+      "openimages_label": "Remote control",
+      "local_label": "remote_control"
+    }
+  ]
+}

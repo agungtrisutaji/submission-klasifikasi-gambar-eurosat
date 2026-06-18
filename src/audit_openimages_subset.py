@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 import statistics
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -28,6 +29,15 @@ TARGET_LOCAL_LABELS = [
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Audit an exploratory Open Images V7 IT asset crop subset."
+    )
+    parser.add_argument(
+        "--class-config",
+        type=Path,
+        default=None,
+        help=(
+            "Optional JSON class config. When provided, expected labels are read "
+            "from the 'classes' field instead of the built-in fallback labels."
+        ),
     )
     parser.add_argument(
         "--metadata-path",
@@ -69,6 +79,64 @@ def import_pillow() -> tuple[Any, Any]:
         ) from error
 
     return Image, UnidentifiedImageError
+
+
+def validate_local_label(local_label: str) -> None:
+    if not re.fullmatch(r"[a-z0-9][a-z0-9_]*", local_label):
+        raise ValueError(
+            "Invalid local_label. Use lowercase letters, numbers, and underscores "
+            f"only, starting with a letter or number: {local_label!r}"
+        )
+
+
+def load_expected_labels(class_config_path: Path | None) -> list[str]:
+    if class_config_path is None:
+        return TARGET_LOCAL_LABELS.copy()
+
+    if not class_config_path.exists():
+        raise FileNotFoundError(f"Class config not found: {class_config_path}")
+
+    with class_config_path.open("r", encoding="utf-8") as file:
+        config = json.load(file)
+
+    class_items = config.get("classes")
+    if not isinstance(class_items, list):
+        raise ValueError("Class config field 'classes' must be a list.")
+
+    expected_labels: list[str] = []
+    seen_openimages_labels: set[str] = set()
+    seen_local_labels: set[str] = set()
+
+    for index, item in enumerate(class_items):
+        if not isinstance(item, dict):
+            raise ValueError(f"Class config item #{index + 1} must be an object.")
+
+        openimages_label = item.get("openimages_label")
+        local_label = item.get("local_label")
+        if not isinstance(openimages_label, str) or not openimages_label.strip():
+            raise ValueError(
+                f"Class config item #{index + 1} must include openimages_label."
+            )
+        if not isinstance(local_label, str) or not local_label.strip():
+            raise ValueError(f"Class config item #{index + 1} must include local_label.")
+
+        openimages_label = openimages_label.strip()
+        local_label = local_label.strip()
+        validate_local_label(local_label)
+
+        if openimages_label in seen_openimages_labels:
+            raise ValueError(f"Duplicate openimages_label: {openimages_label}")
+        if local_label in seen_local_labels:
+            raise ValueError(f"Duplicate local_label: {local_label}")
+
+        seen_openimages_labels.add(openimages_label)
+        seen_local_labels.add(local_label)
+        expected_labels.append(local_label)
+
+    if not expected_labels:
+        raise ValueError("Class config must contain at least one class.")
+
+    return expected_labels
 
 
 def read_metadata(path: Path) -> list[dict[str, str]]:
@@ -115,13 +183,15 @@ def validate_crop(path: Path) -> tuple[bool, str | None, tuple[int, int] | None]
         return False, str(error), None
 
 
-def summarize_resolutions(rows: list[dict[str, str]]) -> list[dict[str, Any]]:
+def summarize_resolutions(
+    rows: list[dict[str, str]], expected_labels: list[str]
+) -> list[dict[str, Any]]:
     summary_rows: list[dict[str, Any]] = []
     grouped: dict[str, list[dict[str, str]]] = defaultdict(list)
     for row in rows:
         grouped[row["local_label"]].append(row)
 
-    for local_label in TARGET_LOCAL_LABELS:
+    for local_label in expected_labels:
         class_rows = grouped.get(local_label, [])
         crop_widths = [parse_int(row.get("crop_width", "")) for row in class_rows]
         crop_heights = [parse_int(row.get("crop_height", "")) for row in class_rows]
@@ -193,7 +263,11 @@ def write_resolution_summary(path: Path, rows: list[dict[str, Any]]) -> None:
         writer.writerows(rows)
 
 
-def build_audit(rows: list[dict[str, str]], args: argparse.Namespace) -> dict[str, Any]:
+def build_audit(
+    rows: list[dict[str, str]],
+    args: argparse.Namespace,
+    expected_labels: list[str],
+) -> dict[str, Any]:
     class_counts = Counter(row["local_label"] for row in rows)
     crop_resolution_counter = Counter(
         f"{parse_int(row.get('crop_width', ''))}x{parse_int(row.get('crop_height', ''))}"
@@ -244,11 +318,11 @@ def build_audit(rows: list[dict[str, str]], args: argparse.Namespace) -> dict[st
 
     unique_crop_resolutions = len(crop_resolution_counter)
     all_target_classes_present = all(
-        class_counts.get(local_label, 0) > 0 for local_label in TARGET_LOCAL_LABELS
+        class_counts.get(local_label, 0) > 0 for local_label in expected_labels
     )
     classes_meet_exploration_minimum = all(
         class_counts.get(local_label, 0) >= args.min_crops_per_class
-        for local_label in TARGET_LOCAL_LABELS
+        for local_label in expected_labels
     )
     resolution_non_uniform = unique_crop_resolutions > 1
 
@@ -276,7 +350,7 @@ def build_audit(rows: list[dict[str, str]], args: argparse.Namespace) -> dict[st
     return {
         "metadata_path": args.metadata_path.as_posix(),
         "total_crop_rows": len(rows),
-        "target_classes": TARGET_LOCAL_LABELS,
+        "target_classes": expected_labels,
         "class_counts": dict(class_counts),
         "unique_crop_resolutions": unique_crop_resolutions,
         "top_crop_resolutions": dict(crop_resolution_counter.most_common(20)),
@@ -324,12 +398,13 @@ def build_audit(rows: list[dict[str, str]], args: argparse.Namespace) -> dict[st
 
 def main() -> None:
     args = parse_args()
+    expected_labels = load_expected_labels(args.class_config)
     rows = read_metadata(args.metadata_path)
 
-    resolution_rows = summarize_resolutions(rows)
+    resolution_rows = summarize_resolutions(rows, expected_labels)
     write_resolution_summary(args.resolution_summary_csv, resolution_rows)
 
-    audit = build_audit(rows, args)
+    audit = build_audit(rows, args, expected_labels)
     args.audit_json.parent.mkdir(parents=True, exist_ok=True)
     with args.audit_json.open("w", encoding="utf-8") as file:
         json.dump(audit, file, indent=2)

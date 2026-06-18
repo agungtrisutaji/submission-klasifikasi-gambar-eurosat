@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import json
 import re
 from collections import OrderedDict
 from pathlib import Path
@@ -50,6 +51,15 @@ METADATA_COLUMNS = [
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Build an exploratory Open Images V7 IT asset crop subset."
+    )
+    parser.add_argument(
+        "--class-config",
+        type=Path,
+        default=None,
+        help=(
+            "Optional JSON class config. When provided, classes are read from "
+            "the 'classes' field instead of the built-in fallback classes."
+        ),
     )
     parser.add_argument(
         "--source-splits",
@@ -148,6 +158,64 @@ def import_pillow() -> tuple[Any, Any]:
     return Image, UnidentifiedImageError
 
 
+def validate_local_label(local_label: str) -> None:
+    if not re.fullmatch(r"[a-z0-9][a-z0-9_]*", local_label):
+        raise ValueError(
+            "Invalid local_label. Use lowercase letters, numbers, and underscores "
+            f"only, starting with a letter or number: {local_label!r}"
+        )
+
+
+def load_class_config(class_config_path: Path | None) -> OrderedDict[str, str]:
+    if class_config_path is None:
+        return TARGET_CLASSES.copy()
+
+    if not class_config_path.exists():
+        raise FileNotFoundError(f"Class config not found: {class_config_path}")
+
+    with class_config_path.open("r", encoding="utf-8") as file:
+        config = json.load(file)
+
+    class_items = config.get("classes")
+    if not isinstance(class_items, list):
+        raise ValueError("Class config field 'classes' must be a list.")
+
+    class_map: OrderedDict[str, str] = OrderedDict()
+    seen_openimages_labels: set[str] = set()
+    seen_local_labels: set[str] = set()
+
+    for index, item in enumerate(class_items):
+        if not isinstance(item, dict):
+            raise ValueError(f"Class config item #{index + 1} must be an object.")
+
+        openimages_label = item.get("openimages_label")
+        local_label = item.get("local_label")
+        if not isinstance(openimages_label, str) or not openimages_label.strip():
+            raise ValueError(
+                f"Class config item #{index + 1} must include openimages_label."
+            )
+        if not isinstance(local_label, str) or not local_label.strip():
+            raise ValueError(f"Class config item #{index + 1} must include local_label.")
+
+        openimages_label = openimages_label.strip()
+        local_label = local_label.strip()
+        validate_local_label(local_label)
+
+        if openimages_label in seen_openimages_labels:
+            raise ValueError(f"Duplicate openimages_label: {openimages_label}")
+        if local_label in seen_local_labels:
+            raise ValueError(f"Duplicate local_label: {local_label}")
+
+        seen_openimages_labels.add(openimages_label)
+        seen_local_labels.add(local_label)
+        class_map[openimages_label] = local_label
+
+    if not class_map:
+        raise ValueError("Class config must contain at least one class.")
+
+    return class_map
+
+
 def sanitize_filename(value: str) -> str:
     sanitized = re.sub(r"[^A-Za-z0-9_.-]+", "_", value.strip())
     return sanitized.strip("._") or "unknown"
@@ -212,11 +280,11 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def prepare_output_dirs(args: argparse.Namespace) -> None:
+def prepare_output_dirs(args: argparse.Namespace, class_map: OrderedDict[str, str]) -> None:
     args.metadata_path.parent.mkdir(parents=True, exist_ok=True)
     args.raw_dir.mkdir(parents=True, exist_ok=True)
 
-    for local_label in TARGET_CLASSES.values():
+    for local_label in class_map.values():
         label_dir = args.raw_dir / local_label
         if args.overwrite and label_dir.exists():
             for image_path in label_dir.glob("*.jpg"):
@@ -346,12 +414,13 @@ def main() -> None:
     fo, foz = import_fiftyone()
     args.dataset_dir.mkdir(parents=True, exist_ok=True)
     fo.config.dataset_zoo_dir = str(args.dataset_dir.resolve())
-    prepare_output_dirs(args)
+    class_map = load_class_config(args.class_config)
+    prepare_output_dirs(args, class_map)
 
     rows: list[dict[str, Any]] = []
-    crop_counts = {local_label: 0 for local_label in TARGET_CLASSES.values()}
+    crop_counts = {local_label: 0 for local_label in class_map.values()}
 
-    for openimages_label, local_label in TARGET_CLASSES.items():
+    for openimages_label, local_label in class_map.items():
         for source_split in args.source_splits:
             if crop_counts[local_label] >= args.target_crops_per_class:
                 break
