@@ -1,0 +1,10 @@
+annual_crop
+forest
+herbaceous_vegetation
+highway
+industrial
+pasture
+permanent_crop
+residential
+river
+sea_lake
