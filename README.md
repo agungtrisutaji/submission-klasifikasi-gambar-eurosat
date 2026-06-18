@@ -30,7 +30,9 @@ Kombinasi kandidat berikutnya disimpan di class config:
 | Computer monitor | `computer_monitor` |
 | Camera | `camera` |
 
-Feasibility pengganti dengan `headphones` juga belum layak karena hanya menghasilkan 1.241 crop dari target 2.000. Config saat ini mengganti `headphones` dengan `camera` untuk rerun berikutnya. Kandidat cadangan di config: `tablet_computer`, `television`, `server`, dan `remote_control`. Catatan: `Server` masih perlu validasi label Open Images sebelum dipromosikan ke kombinasi kelas utama.
+Feasibility pengganti dengan `headphones` juga belum layak karena hanya menghasilkan 1.241 crop dari target 2.000. Config kemudian mengganti `headphones` dengan `camera`, dan feasibility Camera sudah lolos: total 10.000 crop, setiap kelas 2.000 crop, resolusi crop tidak seragam, corrupt image 0, duplicate hash group 0, duplicate across classes 0, blockers kosong, dan `ready_for_full_scale_dataset_build = true`.
+
+Camera replacement combination accepted for final dataset preparation. Next step: create train/validation/test split with group split by `source_image_id`. Jangan training, tuning, atau export model sebelum split dan audit split selesai.
 
 Jalankan builder feasibility kandidat baru dari root repository:
 
@@ -58,7 +60,7 @@ outputs/dataset_audit/openimages_subset_audit.json
 outputs/dataset_audit/openimages_resolution_summary.csv
 ```
 
-Folder `dataset/`, `openimages_data/`, `fiftyone/`, dan `outputs/` di-ignore oleh git. Jangan lanjut ke split final atau modelling sebelum kombinasi kelas baru memenuhi full-scale criteria: total crop minimal 10.000, setiap kelas minimal 2.000 crop, resolusi crop tidak seragam, corrupt image nol atau sudah dikeluarkan, duplicate/cross-class duplicate sudah direview, dan `ready_for_full_scale_dataset_build` bernilai `true`.
+Folder `dataset/`, `openimages_data/`, `fiftyone/`, dan `outputs/` di-ignore oleh git. Dataset Camera sudah memenuhi full-scale criteria, tetapi split final belum dibuat. Tahap berikutnya adalah membuat split lokal dan audit leakage sebelum modelling.
 
 Notebook utama:
 
