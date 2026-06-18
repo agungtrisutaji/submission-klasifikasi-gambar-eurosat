@@ -17,18 +17,14 @@
       "local_label": "computer_monitor"
     },
     {
-      "openimages_label": "Headphones",
-      "local_label": "headphones"
+      "openimages_label": "Camera",
+      "local_label": "camera"
     }
   ],
   "candidate_replacements": [
     {
       "openimages_label": "Tablet computer",
       "local_label": "tablet_computer"
-    },
-    {
-      "openimages_label": "Camera",
-      "local_label": "camera"
     },
     {
       "openimages_label": "Television",
@@ -41,6 +37,23 @@
     {
       "openimages_label": "Remote control",
       "local_label": "remote_control"
+    }
+  ],
+  "rejected_candidates": [
+    {
+      "openimages_label": "Computer mouse",
+      "local_label": "computer_mouse",
+      "reason": "Only 724 valid crops from train with target 2000."
+    },
+    {
+      "openimages_label": "Printer",
+      "local_label": "printer",
+      "reason": "Only 262 valid crops from train with target 2000."
+    },
+    {
+      "openimages_label": "Headphones",
+      "local_label": "headphones",
+      "reason": "Only 1241 valid crops from train with target 2000."
     }
   ]
 }
