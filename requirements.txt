@@ -4,6 +4,7 @@ tensorflow-datasets
 tensorflow-metadata
 tensorflowjs
 tensorflow-hub
+fiftyone
 Pillow
 matplotlib
 numpy
