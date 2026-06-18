@@ -15,6 +15,55 @@ Branch `experiment/open-images-it-assets` digunakan untuk menguji migrasi dari E
 
 Tahap awal ini belum melakukan download dataset, training, atau export ulang model.
 
+## Status eksplorasi dataset
+
+Tahap builder eksplorasi sudah disiapkan melalui script lokal:
+
+```text
+src/build_openimages_subset.py
+src/audit_openimages_subset.py
+```
+
+Scope tahap ini:
+
+- validasi bahwa class name Open Images dapat dipakai oleh FiftyOne;
+- download subset kecil Open Images V7 dengan label type `detections`;
+- crop bounding box kelas target menjadi dataset klasifikasi awal;
+- simpan metadata crop ke `dataset/metadata/openimages_crop_metadata.csv`;
+- audit jumlah crop, resolusi crop, corrupt file, duplicate hash, dan potensi duplicate antar kelas;
+- belum membuat split final train/validation/test;
+- belum training;
+- belum export ulang SavedModel, TFLite, atau TFJS.
+
+Output eksplorasi berada pada folder yang di-ignore git:
+
+```text
+dataset/
+openimages_data/
+outputs/
+```
+
+Cara menjalankan builder eksplorasi:
+
+```powershell
+python src/build_openimages_subset.py --target-crops-per-class 150 --max-samples-per-class 500 --source-splits train --overwrite
+```
+
+Cara menjalankan audit:
+
+```powershell
+python src/audit_openimages_subset.py --min-crops-per-class 100
+```
+
+Output audit:
+
+```text
+outputs/dataset_audit/openimages_subset_audit.json
+outputs/dataset_audit/openimages_resolution_summary.csv
+```
+
+Jika audit belum lolos, ubah parameter eksplorasi seperti `--max-samples-per-class`, `--target-crops-per-class`, atau `--source-splits` sebelum lanjut ke full scale.
+
 ## Rencana migrasi identitas project
 
 Mapping identitas yang dipakai untuk migrasi bertahap:
