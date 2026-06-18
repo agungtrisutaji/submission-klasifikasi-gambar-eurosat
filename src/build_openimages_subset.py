@@ -241,7 +241,6 @@ def load_openimages_subset(
         max_samples=args.max_samples_per_class,
         shuffle=True,
         seed=args.seed,
-        dataset_dir=str(args.dataset_dir),
         dataset_name=dataset_name,
         num_workers=args.num_workers,
     )
@@ -345,6 +344,8 @@ def write_metadata(metadata_path: Path, rows: list[dict[str, Any]]) -> None:
 def main() -> None:
     args = parse_args()
     fo, foz = import_fiftyone()
+    args.dataset_dir.mkdir(parents=True, exist_ok=True)
+    fo.config.dataset_zoo_dir = str(args.dataset_dir.resolve())
     prepare_output_dirs(args)
 
     rows: list[dict[str, Any]] = []
