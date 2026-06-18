@@ -38,7 +38,7 @@ Scope tahap ini:
 
 Full-scale feasibility awal dengan `Laptop`, `Computer keyboard`, `Computer mouse`, `Mobile phone`, dan `Printer` gagal untuk target 2.000 crop per kelas. `computer_mouse` hanya mencapai 724 crop dan `printer` hanya mencapai 262 crop dari source split `train`, sehingga dua kelas tersebut tidak dipakai sebagai kandidat final saat ini. Ringkasan keputusan ada di `notes/OPEN_IMAGES_FULL_SCALE_FEASIBILITY.md`.
 
-Feasibility pengganti dengan `Headphones` juga gagal karena hanya mencapai 1.241 crop dari target 2.000. Ringkasan hasilnya ada di `notes/OPEN_IMAGES_REPLACEMENT_FEASIBILITY.md`. Eksperimen berikutnya memakai class config dengan `Camera` sebagai pengganti `Headphones` agar kombinasi kelas dapat diuji tanpa mengedit source code.
+Feasibility pengganti dengan `Headphones` juga gagal karena hanya mencapai 1.241 crop dari target 2.000. Ringkasan hasilnya ada di `notes/OPEN_IMAGES_REPLACEMENT_FEASIBILITY.md`. Camera kemudian dipakai sebagai pengganti `Headphones`, dan feasibility Camera sudah lolos: total 10.000 crop, setiap kelas 2.000 crop, resolusi crop tidak seragam, corrupt image 0, duplicate hash group 0, duplicate across classes 0, blockers kosong, dan `ready_for_full_scale_dataset_build = true`. Ringkasan hasilnya ada di `notes/OPEN_IMAGES_CAMERA_FEASIBILITY.md`.
 
 Output eksplorasi berada pada folder yang di-ignore git:
 
@@ -67,7 +67,7 @@ outputs/dataset_audit/openimages_subset_audit.json
 outputs/dataset_audit/openimages_resolution_summary.csv
 ```
 
-Jika audit belum lolos, ubah kombinasi kelas di `configs/openimages_it_assets_classes.json` atau ubah parameter eksplorasi seperti `--max-samples-per-class`, `--target-crops-per-class`, atau `--source-splits` sebelum lanjut ke full scale.
+Camera replacement combination accepted for final dataset preparation. Next step: create train/validation/test split with group split by `source_image_id`. Jangan training, tuning, atau export model sebelum split dan audit split selesai.
 
 ## Rencana migrasi identitas project
 
@@ -156,15 +156,18 @@ Strategi yang disarankan untuk subset:
 Contoh arah perintah awal, belum dijalankan pada tahap ini:
 
 ```python
+import fiftyone as fo
 import fiftyone.zoo as foz
 
 classes = [
     "Laptop",
     "Computer keyboard",
-    "Computer mouse",
     "Mobile phone",
-    "Printer",
+    "Computer monitor",
+    "Camera",
 ]
+
+fo.config.dataset_zoo_dir = "openimages_data"
 
 dataset = foz.load_zoo_dataset(
     "open-images-v7",
@@ -172,7 +175,6 @@ dataset = foz.load_zoo_dataset(
     label_types=["detections"],
     classes=classes,
     max_samples=1000,
-    dataset_dir="openimages_data",
 )
 ```
 
