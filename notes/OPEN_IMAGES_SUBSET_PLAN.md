@@ -22,6 +22,8 @@ Tahap builder eksplorasi sudah disiapkan melalui script lokal:
 ```text
 src/build_openimages_subset.py
 src/audit_openimages_subset.py
+src/split_openimages_subset.py
+src/audit_openimages_split.py
 configs/openimages_it_assets_classes.json
 ```
 
@@ -68,6 +70,8 @@ outputs/dataset_audit/openimages_resolution_summary.csv
 ```
 
 Camera replacement combination accepted for final dataset preparation. Next step: create train/validation/test split with group split by `source_image_id`. Jangan training, tuning, atau export model sebelum split dan audit split selesai.
+
+Split lokal train/validation/test sudah dibuat dengan group split berdasarkan `source_image_id` dan seed `42`. Hasil audit split ada di `notes/OPEN_IMAGES_SPLIT_AUDIT.md`: total 10.000 crop, train 8.006, validation 994, test 1.000, source image leakage across split 0, duplicate hash across split 0, corrupt image count 0, missing split crop file count 0, dan `ready_for_modelling = true`.
 
 ## Rencana migrasi identitas project
 
@@ -233,7 +237,7 @@ Model boleh menerima resize tetap pada pipeline preprocessing, tetapi dokumentas
 
 ## Split train/validation/test
 
-Split lokal yang direncanakan:
+Split lokal yang dibuat:
 
 ```text
 dataset/train/<class_name>/
@@ -245,11 +249,23 @@ Proporsi awal:
 
 | Split | Proporsi |
 | --- | ---: |
-| Train | 80% |
-| Validation | 10% |
-| Test | 10% |
+| Train | 0.8006 |
+| Validation | 0.0994 |
+| Test | 0.1000 |
 
-Split dibuat stratified per kelas dengan seed `42`. Jika memakai split bawaan Open Images sebagai sumber, tetap buat split lokal eksplisit untuk submission dan dokumentasikan mapping-nya.
+Split dibuat dengan seed `42`, stratified mendekati 80/10/10 per kelas, dan group split berdasarkan `source_image_id`. Semua crop dari source image yang sama harus tetap berada dalam satu split lokal.
+
+Command split:
+
+```powershell
+.\.venv\Scripts\python.exe src\split_openimages_subset.py --class-config configs\openimages_it_assets_classes.json --metadata-path dataset\metadata\openimages_crop_metadata.csv --raw-dir dataset\raw --split-dir dataset --train-ratio 0.8 --validation-ratio 0.1 --test-ratio 0.1 --seed 42 --overwrite
+```
+
+Command audit split:
+
+```powershell
+.\.venv\Scripts\python.exe src\audit_openimages_split.py --class-config configs\openimages_it_assets_classes.json
+```
 
 ## Anti data leakage
 
