@@ -42,8 +42,8 @@ Evaluasi akhir dilakukan hanya pada test set setelah model dipilih menggunakan v
 
 | Metrik | Nilai |
 | --- | ---: |
-| Test accuracy | 0.9148 |
-| Test loss | 0.2519 |
+| Test accuracy | 0.9196 |
+| Test loss | 0.2490 |
 | Test samples | 2.700 |
 
 ## Export Summary

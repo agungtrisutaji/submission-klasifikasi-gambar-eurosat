@@ -4,6 +4,7 @@
 
 - [x] `README.md` menjelaskan tujuan, dataset, split, metode, hasil, export, dan cara menjalankan notebook.
 - [x] `requirements.txt` tetap tidak diubah.
+- [x] Dependency PyTorch CUDA di `requirements.txt` tetap dipertahankan sesuai kondisi proyek.
 - [x] Notebook utama tetap `klasifikasi-gambar-eurosat.ipynb`.
 - [x] Path notebook relatif terhadap root repository.
 - [x] Dataset besar tidak masuk git.
@@ -41,6 +42,7 @@
 - [x] Test set tidak dipakai untuk training/tuning.
 - [x] Test accuracy dihitung.
 - [x] Test loss dihitung.
+- [x] Angka evaluasi dokumentasi sudah disinkronkan dengan output notebook terbaru: test accuracy `0.9196`, test loss `0.2490`, test samples `2.700`.
 - [x] Confusion matrix dibuat.
 - [x] Classification report dibuat.
 - [x] Sample inference dibuat.
@@ -62,6 +64,7 @@ Catatan TFJS: package `tensorflowjs` tidak dimasukkan langsung ke `requirements.
 ## Sebelum ZIP
 
 - [x] Notebook sudah dijalankan ulang dari atas ke bawah di environment final sesuai `notes/FINAL_AUDIT.md`.
+- [x] Output notebook sudah dibersihkan dari path lokal pribadi dan warning yang tidak relevan.
 - [x] TFJS export sudah tersedia dan tervalidasi di `tfjs/eurosat_classifier/`; instruksi instalasi manual `tensorflowjs` tetap dicatat hanya untuk reproduksi ulang.
 - [x] Folder export wajib sudah tersedia untuk dimasukkan ke ZIP: `saved_model/`, `tflite/`, dan `tfjs/`.
 - [x] Folder yang tidak perlu masuk ZIP sudah dicatat: `.venv/`, `dataset/`, `tfds_data/`, dan `outputs/`.
