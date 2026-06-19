@@ -1,27 +1,31 @@
 # Dataset Rework Decision
 
-Tanggal: 2026-06-18
+Tanggal: 2026-06-19
 
 ## Keputusan
 
-Submission tetap memakai **EuroSAT RGB**.
+Branch `experiment/open-images-it-assets` memakai **Open Images V7 IT Asset Subset** sebagai dataset final eksperimen.
 
-Alasan teknis:
+Keputusan ini menggantikan keputusan lama yang mempertahankan EuroSAT RGB untuk branch stabil. EuroSAT tetap menjadi baseline historis repo utama, tetapi branch eksperimen ini memakai Open Images karena targetnya adalah mengejar saran bintang 5 yang belum terpenuhi oleh EuroSAT, terutama resolusi asli yang tidak seragam dan test accuracy minimal 95%.
 
-- EuroSAT RGB sudah memenuhi kriteria wajib dataset: 27.000 gambar, 10 kelas, bukan Rock Paper Scissors, bukan X-Ray, dan dapat direproduksi melalui TensorFlow Datasets.
-- Pipeline dataset, audit split, training, evaluasi, inference, dan export model sudah lengkap.
-- Fine-tuning MobileNetV2 menaikkan performa dibanding transfer learning frozen, tetapi run penuh final masih berada sedikit di bawah saran bintang 5 95% pada test accuracy.
-- EuroSAT RGB memiliki resolusi asli seragam `64x64x3`, sehingga saran resolusi asli tidak seragam tidak diklaim terpenuhi.
-- Mengganti dataset pada tahap akhir berisiko membuat submission kurang reproducible jika tidak diaudit dan dijalankan ulang penuh dari awal.
+## Alasan Teknis
 
-## Ringkasan Kandidat Dataset Alternatif
+- Dataset final memiliki 15.000 crop valid.
+- Ada 5 kelas dengan 3.000 crop per kelas.
+- Crop dibuat dari bounding box Open Images V7 detections.
+- Resolusi crop asli tidak seragam dengan 14.168 resolusi unik.
+- Group split berdasarkan `source_image_id` mencegah leakage antar train/validation/test.
+- Audit final menunjukkan corrupt image 0 dan duplicate hash antar split 0.
+- Model final mencapai train accuracy 99,73%, validation accuracy 95,54%, dan test accuracy 95,79%.
 
-| Dataset | Sumber | Jumlah gambar | Kelas | Resolusi asli | Risiko |
-| --- | --- | ---: | ---: | --- | --- |
-| Intel Image Classification | Kaggle | sekitar 25.000 | 6 | umumnya 150x150 | Perlu Kaggle workflow; akurasi 95% tidak pasti untuk scene classification. |
-| Food-101 | ETH/TFDS/Hugging Face | 101.000 | 101 | gambar di-rescale max side 512 | Dataset besar dan menantang; target 95% tidak realistis untuk submission cepat. |
-| PlantVillage | TFDS/GitHub | sekitar 54.000 | 38 | banyak varian dataset memakai citra daun terkontrol | Lebih mudah, tetapi perlu migrasi notebook penuh dan audit lisensi/source secara rapi. |
+## Kelas yang Ditolak
+
+| Label lokal | Alasan |
+| --- | --- |
+| `computer_mouse` | hanya 724 crop valid dari target 2.000 |
+| `printer` | hanya 262 crop valid dari target 2.000 |
+| `headphones` | hanya 1.241 crop valid dari target 2.000 |
 
 ## Dampak ke Submission
 
-EuroSAT tetap dipilih karena saat ini submission sudah rapi, reproducible, bebas data leakage, dan memenuhi seluruh kriteria wajib. Risiko bintang 5 yang masih tersisa dicatat secara jujur di `FINAL_AUDIT.md` dan `MODEL_SUMMARY.md`.
+Open Images IT Asset Subset dipilih karena branch ini sekarang memenuhi target utama yang belum dicapai EuroSAT pada run sebelumnya. Risiko utama yang tersisa bukan metrik akurasi, tetapi ukuran export model ensemble yang besar.

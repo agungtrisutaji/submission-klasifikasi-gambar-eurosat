@@ -15,6 +15,30 @@ Branch `experiment/open-images-it-assets` digunakan untuk menguji migrasi dari E
 
 Tahap awal ini belum melakukan download dataset, training, atau export ulang model.
 
+## Status final dataset
+
+Eksperimen sudah dilanjutkan dari feasibility 10.000 crop ke dataset final 15.000 crop. Kombinasi kelas final:
+
+| Label target | Open Images class | Crop |
+| --- | --- | ---: |
+| `laptop` | Laptop | 3.000 |
+| `computer_keyboard` | Computer keyboard | 3.000 |
+| `mobile_phone` | Mobile phone | 3.000 |
+| `computer_monitor` | Computer monitor | 3.000 |
+| `camera` | Camera | 3.000 |
+
+Split final sudah diaudit dengan hasil:
+
+| Split | Total |
+| --- | ---: |
+| Train | 12.002 |
+| Validation | 1.502 |
+| Test | 1.496 |
+
+Audit final menunjukkan `source_image_id` leakage antar split 0, duplicate hash antar split 0, corrupt image 0, 14.168 resolusi crop unik, dan `ready_for_modelling = true`. Model final sudah dilatih dan mencapai train accuracy 99,73%, validation accuracy 95,54%, dan test accuracy 95,79% tanpa memakai test set untuk pemilihan model. Ringkasan final ada di `notes/MODEL_SUMMARY_IT_ASSETS.md`, `notes/FINAL_AUDIT_IT_ASSETS.md`, dan `notes/SUBMISSION_CHECKLIST_IT_ASSETS.md`.
+
+Catatan risiko: export final berupa ensemble berukuran besar. Ukuran artefak perlu dicek sebelum final ZIP atau push GitHub.
+
 ## Status eksplorasi dataset
 
 Tahap builder eksplorasi sudah disiapkan melalui script lokal:
@@ -27,16 +51,16 @@ src/audit_openimages_split.py
 configs/openimages_it_assets_classes.json
 ```
 
-Scope tahap ini:
+Scope awal tahap eksplorasi:
 
 - validasi bahwa class name Open Images dapat dipakai oleh FiftyOne;
 - download subset kecil Open Images V7 dengan label type `detections`;
 - crop bounding box kelas target menjadi dataset klasifikasi awal;
 - simpan metadata crop ke `dataset/metadata/openimages_crop_metadata.csv`;
 - audit jumlah crop, resolusi crop, corrupt file, duplicate hash, dan potensi duplicate antar kelas;
-- belum membuat split final train/validation/test;
-- belum training;
-- belum export ulang SavedModel, TFLite, atau TFJS.
+- split final train/validation/test kemudian sudah dibuat;
+- training final kemudian sudah selesai;
+- export SavedModel, TFLite, dan TFJS kemudian sudah selesai.
 
 Full-scale feasibility awal dengan `Laptop`, `Computer keyboard`, `Computer mouse`, `Mobile phone`, dan `Printer` gagal untuk target 2.000 crop per kelas. `computer_mouse` hanya mencapai 724 crop dan `printer` hanya mencapai 262 crop dari source split `train`, sehingga dua kelas tersebut tidak dipakai sebagai kandidat final saat ini. Ringkasan keputusan ada di `notes/OPEN_IMAGES_FULL_SCALE_FEASIBILITY.md`.
 
@@ -69,9 +93,9 @@ outputs/dataset_audit/openimages_subset_audit.json
 outputs/dataset_audit/openimages_resolution_summary.csv
 ```
 
-Camera replacement combination accepted for final dataset preparation. Next step: create train/validation/test split with group split by `source_image_id`. Jangan training, tuning, atau export model sebelum split dan audit split selesai.
+Camera replacement combination accepted for final dataset preparation. Split dan audit split kemudian sudah selesai, sehingga modelling final boleh dilakukan dan sudah dijalankan.
 
-Split lokal train/validation/test sudah dibuat dengan group split berdasarkan `source_image_id` dan seed `42`. Hasil audit split ada di `notes/OPEN_IMAGES_SPLIT_AUDIT.md`: total 10.000 crop, train 8.006, validation 994, test 1.000, source image leakage across split 0, duplicate hash across split 0, corrupt image count 0, missing split crop file count 0, dan `ready_for_modelling = true`.
+Split lokal train/validation/test sudah dibuat dengan group split berdasarkan `source_image_id` dan seed `42`. Hasil audit split final 15.000 crop: train 12.002, validation 1.502, test 1.496, source image leakage across split 0, duplicate hash across split 0, corrupt image count 0, missing split crop file count 0, dan `ready_for_modelling = true`.
 
 ## Rencana migrasi identitas project
 
@@ -210,17 +234,17 @@ Crop digunakan sebagai gambar klasifikasi, bukan bounding box task. Notebook har
 
 ## Target jumlah gambar/crop per kelas
 
-Target awal:
+Target final:
 
 | Kelas | Target minimum crop | Target eksplorasi |
 | --- | ---: | ---: |
-| Laptop | 2.000 | 2.500-3.000 |
-| Computer keyboard | 2.000 | 2.500-3.000 |
-| Computer mouse | 2.000 | 2.500-3.000 |
-| Mobile phone | 2.000 | 2.500-3.000 |
-| Printer | 2.000 | 2.500-3.000 |
+| Laptop | 3.000 | 3.000 |
+| Computer keyboard | 3.000 | 3.000 |
+| Mobile phone | 3.000 | 3.000 |
+| Computer monitor | 3.000 | 3.000 |
+| Camera | 3.000 | 3.000 |
 
-Target dataset final minimal 10.000 crop valid. Jika salah satu kelas utama sulit mencapai jumlah atau kualitas memadai, gunakan kelas cadangan dan catat alasan penggantian.
+Target dataset final minimal 10.000 crop valid sudah terlampaui dengan total 15.000 crop valid.
 
 ## Audit resolusi asli
 
@@ -245,13 +269,13 @@ dataset/validation/<class_name>/
 dataset/test/<class_name>/
 ```
 
-Proporsi awal:
+Proporsi final:
 
 | Split | Proporsi |
 | --- | ---: |
-| Train | 0.8006 |
-| Validation | 0.0994 |
-| Test | 0.1000 |
+| Train | 0.8001 |
+| Validation | 0.1001 |
+| Test | 0.0997 |
 
 Split dibuat dengan seed `42`, stratified mendekati 80/10/10 per kelas, dan group split berdasarkan `source_image_id`. Semua crop dari source image yang sama harus tetap berada dalam satu split lokal.
 
@@ -298,4 +322,4 @@ Tahap dataset dianggap selesai bila:
 - sumber dataset, license note, dan reproduksi subset tercatat di notebook dan README;
 - tidak ada dataset besar, cache Open Images, atau output run yang masuk git.
 
-Setelah acceptance criteria dataset terpenuhi, baru lanjut ke modelling.
+Acceptance criteria dataset sudah terpenuhi untuk dataset final 15.000 crop. Modelling dan export final sudah dijalankan setelah audit split menyatakan `ready_for_modelling = true`.

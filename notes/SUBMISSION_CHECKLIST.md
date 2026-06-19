@@ -1,74 +1,45 @@
 # Submission Checklist
 
-## Struktur File
+Current branch summary for `experiment/open-images-it-assets`.
 
-- [x] `README.md` menjelaskan tujuan, dataset, split, metode, hasil, export, dan cara menjalankan notebook.
-- [x] `requirements.txt` tetap tidak diubah.
-- [x] Dependency PyTorch CUDA di `requirements.txt` tetap dipertahankan sesuai kondisi proyek.
-- [x] Notebook utama tetap `klasifikasi-gambar-eurosat.ipynb`.
-- [x] Path notebook relatif terhadap root repository.
-- [x] Dataset besar tidak masuk git.
-- [x] Folder output run tidak masuk git.
+Detailed version: `notes/SUBMISSION_CHECKLIST_IT_ASSETS.md`.
 
 ## Dataset
 
-- [x] Dataset EuroSAT RGB digunakan.
-- [x] Dataset dimuat melalui TensorFlow Datasets.
-- [x] Total gambar divalidasi: 27.000.
-- [x] Jumlah kelas divalidasi: 10.
-- [x] Nama kelas diambil dari metadata TFDS.
-- [x] Split train/validation/test dibuat 80/10/10.
-- [x] Split dibuat stratified per kelas.
-- [x] Seed reproducibility: 42.
-- [x] Distribusi data sebelum dan sesudah split diaudit.
-- [x] Corrupt image dicek.
-- [x] Duplicate image dicek.
-- [x] Duplicate antar split dicek.
+- [x] Dataset minimal 10.000 gambar/crop.
+- [x] Dataset memiliki 5 kelas.
+- [x] Resolusi crop asli tidak seragam.
+- [x] Metadata crop tersimpan.
+- [x] Split train/validation/test dibuat.
+- [x] Split memakai seed `42`.
+- [x] Source image leakage antar split 0.
+- [x] Duplicate hash antar split 0.
+- [x] Corrupt image count 0.
+- [x] Dataset/cache besar tidak masuk git.
 
-## Modelling
+## Model dan Evaluasi
 
-- [x] Preprocessing gambar tersedia.
-- [x] Data augmentation hanya digunakan pada training flow.
-- [x] Baseline CNN tersedia.
-- [x] Improved model berbasis MobileNetV2 transfer learning tersedia.
-- [x] Fine-tuning sebagian layer atas MobileNetV2 tersedia.
-- [x] Callback EarlyStopping tersedia.
-- [x] Callback ModelCheckpoint tersedia.
-- [x] Callback ReduceLROnPlateau tersedia.
-- [x] Training accuracy/loss dan validation accuracy/loss dicatat.
-
-## Evaluation
-
-- [x] Model dipilih berdasarkan validation set.
-- [x] Test set tidak dipakai untuk training/tuning.
-- [x] Test accuracy dihitung.
-- [x] Test loss dihitung.
-- [x] Angka evaluasi dokumentasi sudah disinkronkan dengan output notebook terbaru: train accuracy `0.9562`, validation accuracy `0.9396`, test accuracy `0.9448`, test loss `0.1753`, test samples `2.700`.
-- [x] Test accuracy sudah melampaui kriteria wajib 85%, tetapi belum mencapai saran bintang 5 95% pada run penuh final.
-- [x] Dataset EuroSAT RGB dicatat memiliki resolusi asli seragam `64x64x3`; saran resolusi tidak seragam tidak diklaim terpenuhi.
-- [x] Confusion matrix dibuat.
-- [x] Classification report dibuat.
-- [x] Sample inference dibuat.
-- [x] Kesimpulan performa model tersedia di notebook.
+- [x] Baseline Sequential CNN tersedia di notebook.
+- [x] Transfer learning dipakai untuk model final.
+- [x] Data augmentation hanya untuk training.
+- [x] Callback digunakan.
+- [x] Model selection memakai validation set.
+- [x] Test set tidak dipakai untuk tuning.
+- [x] Train accuracy lebih dari 95%.
+- [x] Validation accuracy lebih dari 95%.
+- [x] Test accuracy lebih dari 95%.
+- [x] Confusion matrix tersedia.
+- [x] Classification report tersedia.
+- [x] Inference proof tersedia.
 
 ## Export
 
-- [x] SavedModel berhasil dibuat.
-- [x] SavedModel berhasil diload ulang untuk validasi prediksi.
-- [x] TFLite berhasil dibuat.
-- [x] TFLite berhasil diload dengan interpreter untuk validasi prediksi.
-- [x] TFJS berhasil dibuat.
-- [x] TFJS `model.json` valid JSON.
-- [x] TFJS shard `.bin` tersedia.
-- [x] TFJS `label.txt` tersedia dan sama dengan `tflite/label.txt`.
+- [x] SavedModel diexport dan divalidasi.
+- [x] TFLite diexport dan divalidasi.
+- [x] TFJS diexport dan divalidasi.
+- [x] Label files sinkron.
 
-Catatan TFJS: package `tensorflowjs` tidak dimasukkan langsung ke `requirements.txt` karena pip akan menarik `tensorflow-decision-forests` dan dapat memicu konflik dependency pada Windows/Python 3.12. Jika perlu membuat ulang export TFJS, install manual dengan `python -m pip install --no-deps tensorflowjs==4.22.0` setelah dependency pendukungnya tersedia.
+## Remaining Risk
 
-## Sebelum ZIP
-
-- [x] Notebook sudah dijalankan ulang dari atas ke bawah di environment final sesuai `notes/FINAL_AUDIT.md`.
-- [x] Output notebook sudah dibersihkan dari path lokal pribadi dan warning yang tidak relevan.
-- [x] TFJS export sudah tersedia dan tervalidasi di `tfjs/eurosat_classifier/`; instruksi instalasi manual `tensorflowjs` tetap dicatat hanya untuk reproduksi ulang.
-- [x] Folder export wajib sudah tersedia untuk dimasukkan ke ZIP: `saved_model/`, `tflite/`, dan `tfjs/`.
-- [x] Folder yang tidak perlu masuk ZIP sudah dicatat: `.venv/`, `dataset/`, `tfds_data/`, dan `outputs/`.
-- [x] Larangan ZIP di dalam ZIP sudah dicatat sebagai final packaging rule.
+- [ ] Ukuran export ensemble perlu dicek sebelum final ZIP/push.
+- [ ] Jika GitHub menolak file besar, gunakan Git LFS atau model lebih kecil.

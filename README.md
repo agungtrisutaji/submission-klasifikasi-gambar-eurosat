@@ -1,258 +1,189 @@
-# Submission Klasifikasi Gambar EuroSAT
+# Open Images IT Asset Classification
 
-> Branch eksperimen: `experiment/open-images-it-assets`.
->
-> Branch ini sedang menyiapkan migrasi aman dari **EuroSAT RGB** ke **Open Images V7 IT Asset Subset**. Notebook EuroSAT lama tetap dipertahankan sebagai baseline stabil, sedangkan template migrasi awal disiapkan di `klasifikasi-gambar-it-assets.ipynb`. Rencana dataset dan catatan lisensi ada di `notes/OPEN_IMAGES_SUBSET_PLAN.md` dan `notes/DATASET_LICENSE.md`.
+Branch eksperimen: `experiment/open-images-it-assets`
 
-Repository ini berisi submission Dicoding untuk proyek klasifikasi gambar pada kelas **Belajar Fundamental Deep Learning**. Tujuannya adalah membangun pipeline image classification yang rapi, reproducible, dan mudah diperiksa reviewer dari tahap dataset sampai export model.
+Repository ini berisi eksperimen migrasi submission Dicoding **Belajar Fundamental Deep Learning** dari baseline EuroSAT RGB ke **Open Images V7 IT Asset Subset**. Target eksperimen adalah submission klasifikasi gambar yang lebih dekat dengan saran bintang 5: dataset minimal 10.000 gambar, resolusi asli tidak seragam, akurasi train/test minimal 95%, callback, proof inference, dan export SavedModel, TFLite, serta TFJS.
 
-## Eksperimen Open Images IT Asset
-
-Branch `experiment/open-images-it-assets` memiliki builder awal untuk membuat subset eksplorasi kecil dari Open Images V7. Tahap ini hanya memvalidasi download, bounding box, crop objek, metadata, dan audit dataset. Belum ada training dan belum ada export ulang model.
-
-Script yang tersedia:
+Baseline EuroSAT lama tetap dipertahankan di repository sebagai referensi historis. Notebook utama eksperimen Open Images adalah:
 
 ```text
-src/build_openimages_subset.py
-src/audit_openimages_subset.py
-src/split_openimages_subset.py
-src/audit_openimages_split.py
-configs/openimages_it_assets_classes.json
+klasifikasi-gambar-it-assets.ipynb
 ```
 
-Feasibility awal dengan kelas `Laptop`, `Computer keyboard`, `Computer mouse`, `Mobile phone`, dan `Printer` sudah dijalankan untuk target 2.000 crop per kelas. Hasilnya belum layak untuk dataset final karena `computer_mouse` hanya mencapai 724 crop dan `printer` hanya mencapai 262 crop dari source split `train`. Dua kelas tersebut tidak dipakai sebagai kandidat final saat ini.
+## Status Final Eksperimen
 
-Kombinasi kandidat berikutnya disimpan di class config:
+Dataset Open Images IT Asset sudah dibangun, di-split, diaudit, dilatih, dievaluasi, dan diexport secara lokal.
 
-| Open Images class | Label lokal |
+| Item | Status |
 | --- | --- |
-| Laptop | `laptop` |
-| Computer keyboard | `computer_keyboard` |
-| Mobile phone | `mobile_phone` |
-| Computer monitor | `computer_monitor` |
-| Camera | `camera` |
+| Dataset Open Images V7 crop classification | Selesai |
+| Total crop valid | 15.000 |
+| Jumlah kelas | 5 |
+| Resolusi crop asli tidak seragam | Ya, 14.168 resolusi unik |
+| Source image leakage antar split | 0 |
+| Duplicate file hash antar split | 0 |
+| Corrupt image | 0 |
+| Train accuracy | 99,73% |
+| Validation accuracy | 95,54% |
+| Test accuracy | 95,79% |
+| SavedModel export | Valid |
+| TFLite export | Valid |
+| TFJS export | Valid |
 
-Feasibility pengganti dengan `headphones` juga belum layak karena hanya menghasilkan 1.241 crop dari target 2.000. Config kemudian mengganti `headphones` dengan `camera`, dan feasibility Camera sudah lolos: total 10.000 crop, setiap kelas 2.000 crop, resolusi crop tidak seragam, corrupt image 0, duplicate hash group 0, duplicate across classes 0, blockers kosong, dan `ready_for_full_scale_dataset_build = true`.
+Model final dipilih berdasarkan validation accuracy, bukan test set. Test set hanya dipakai sekali untuk evaluasi final.
 
-Camera replacement combination accepted for final dataset preparation. Next step: create train/validation/test split with group split by `source_image_id`. Jangan training, tuning, atau export model sebelum split dan audit split selesai.
+## Dataset
 
-Jalankan builder feasibility kandidat baru dari root repository:
+Subset dibuat dari **Open Images V7** dengan label type `detections`. Bounding box objek target di-crop menjadi gambar klasifikasi single-object.
 
-```powershell
-.\.venv\Scripts\python.exe src\build_openimages_subset.py --class-config configs\openimages_it_assets_classes.json --target-crops-per-class 2000 --max-samples-per-class 5000 --source-splits train --overwrite
-```
+Kelas final:
 
-Output builder:
+| Open Images class | Label lokal | Crop |
+| --- | --- | ---: |
+| Camera | `camera` | 3.000 |
+| Computer keyboard | `computer_keyboard` | 3.000 |
+| Computer monitor | `computer_monitor` | 3.000 |
+| Laptop | `laptop` | 3.000 |
+| Mobile phone | `mobile_phone` | 3.000 |
 
-```text
-dataset/raw/<label_local>/
-dataset/metadata/openimages_crop_metadata.csv
-```
+Kelas yang ditolak dari kandidat awal:
 
-Jalankan audit:
+| Label lokal | Alasan |
+| --- | --- |
+| `computer_mouse` | hanya 724 crop valid dari target 2.000 |
+| `printer` | hanya 262 crop valid dari target 2.000 |
+| `headphones` | hanya 1.241 crop valid dari target 2.000 |
 
-```powershell
-.\.venv\Scripts\python.exe src\audit_openimages_subset.py --class-config configs\openimages_it_assets_classes.json --min-crops-per-class 2000
-```
+Dataset lokal tidak dimasukkan ke git. Folder besar/cache seperti `dataset/`, `openimages_data/`, `fiftyone/`, `tfds_data/`, dan `outputs/` di-ignore.
 
-Output audit:
+## Split Dataset
 
-```text
-outputs/dataset_audit/openimages_subset_audit.json
-outputs/dataset_audit/openimages_resolution_summary.csv
-```
-
-Split lokal train/validation/test sudah dibuat dengan group split berdasarkan `source_image_id` untuk mencegah leakage. Hasil audit split:
+Split dibuat dengan seed `42`, group split berdasarkan `source_image_id`, dan rasio mendekati 80/10/10.
 
 | Split | Total |
 | --- | ---: |
-| Train | 8.006 |
-| Validation | 994 |
-| Test | 1.000 |
+| Train | 12.002 |
+| Validation | 1.502 |
+| Test | 1.496 |
 
-Source image leakage across split `0`, duplicate hash across split `0`, corrupt image count `0`, missing split crop file count `0`, dan `ready_for_modelling = true`.
+Audit split final:
 
-Command split:
+```text
+outputs/dataset_audit/openimages_split_audit.json
+outputs/dataset_audit/openimages_split_summary.csv
+```
+
+Ringkasan audit terdokumentasi di:
+
+```text
+notes/OPEN_IMAGES_SPLIT_AUDIT.md
+notes/FINAL_AUDIT_IT_ASSETS.md
+```
+
+## Model Final
+
+Model final adalah ensemble TensorFlow/Keras dengan horizontal-flip test-time augmentation di dalam graph export:
+
+```text
+EfficientNetV2B1 + EfficientNetV2B2 + EfficientNetV2B3 + ConvNeXtTiny
+```
+
+Metrik real dari run lokal:
+
+| Metric | Value |
+| --- | ---: |
+| Train accuracy | 0.9973 |
+| Validation accuracy | 0.9554 |
+| Test accuracy | 0.9579 |
+
+File evaluasi:
+
+```text
+outputs/evaluation/15k_ensemble_eval.json
+outputs/evaluation/15k_classification_report.csv
+outputs/evaluation/15k_confusion_matrix.csv
+```
+
+## Export Model
+
+Export lokal yang sudah tervalidasi:
+
+```text
+saved_model/it_asset_classifier/
+tflite/it_asset_classifier.tflite
+tfjs/it_asset_classifier/
+label.txt
+tflite/label.txt
+tfjs/it_asset_classifier/label.txt
+```
+
+Validasi export:
+
+| Export | Status | Output shape |
+| --- | --- | --- |
+| SavedModel | exported_and_validated | `[1, 5]` |
+| TFLite | exported_and_validated | `[1, 5]` |
+| TFJS | exported_and_validated | 5 kelas |
+
+Catatan penting: model ensemble berukuran besar. Artefak export IT Asset sudah tervalidasi secara lokal, tetapi `saved_model/it_asset_classifier/`, `tflite/it_asset_classifier.tflite`, dan `tfjs/it_asset_classifier/` sengaja di-ignore dari Git biasa karena melewati batas file GitHub 100 MB. Untuk submission final, simpan artefak ini di workspace lokal/ZIP submission atau gunakan Git LFS bila memang harus dipush ke GitHub.
+
+## Cara Rebuild Dataset
+
+Jalankan dari root repository:
+
+```powershell
+.\.venv\Scripts\python.exe src\build_openimages_subset.py --class-config configs\openimages_it_assets_classes.json --target-crops-per-class 3000 --max-samples-per-class 9000 --source-splits train --overwrite
+```
+
+Audit dataset crop:
+
+```powershell
+.\.venv\Scripts\python.exe src\audit_openimages_subset.py --class-config configs\openimages_it_assets_classes.json --min-crops-per-class 3000
+```
+
+Buat split:
 
 ```powershell
 .\.venv\Scripts\python.exe src\split_openimages_subset.py --class-config configs\openimages_it_assets_classes.json --metadata-path dataset\metadata\openimages_crop_metadata.csv --raw-dir dataset\raw --split-dir dataset --train-ratio 0.8 --validation-ratio 0.1 --test-ratio 0.1 --seed 42 --overwrite
 ```
 
-Command audit split:
+Audit split:
 
 ```powershell
-.\.venv\Scripts\python.exe src\audit_openimages_split.py --class-config configs\openimages_it_assets_classes.json
+.\.venv\Scripts\python.exe src\audit_openimages_split.py --class-config configs\openimages_it_assets_classes.json --split-metadata-path dataset\metadata\openimages_split_metadata.csv --audit-json outputs\dataset_audit\openimages_split_audit.json --split-summary-csv outputs\dataset_audit\openimages_split_summary.csv --min-total-crops 10000 --min-crops-per-class 3000
 ```
-
-Folder `dataset/`, `openimages_data/`, `fiftyone/`, dan `outputs/` di-ignore oleh git. Modelling boleh mulai setelah audit split ini, dengan catatan test set hanya untuk evaluasi final dan tidak boleh dipakai untuk training, tuning, callback, checkpoint selection, atau model selection.
-
-Notebook utama:
-
-```text
-klasifikasi-gambar-eurosat.ipynb
-```
-
-## Dataset
-
-Dataset yang digunakan tetap **EuroSAT RGB**, berisi 27.000 citra satelit Sentinel-2 RGB dengan 10 kelas dan resolusi asli 64x64x3.
-
-Sumber dataset:
-
-- TensorFlow Datasets: `eurosat/rgb`
-- Repositori resmi EuroSAT: `phelber/eurosat`
-- Mirror arsip RGB: Zenodo EuroSAT RGB
-
-TFDS hanya menyediakan split awal `train`, sehingga notebook membuat split eksplisit:
-
-| Split | Jumlah | Proporsi |
-| --- | ---: | ---: |
-| Train | 21.600 | 80% |
-| Validation | 2.700 | 10% |
-| Test | 2.700 | 10% |
-
-Split dibuat stratified per kelas dengan random seed `42`. Test set tidak digunakan untuk training, tuning, callback, checkpoint selection, atau pemilihan model.
-
-Catatan bintang 5: EuroSAT memenuhi syarat jumlah gambar, jumlah kelas, dan bukan dataset latihan Dicoding, tetapi resolusi asli dataset ini seragam (`64x64x3`). Karena itu, submission tidak mengklaim memenuhi saran "gambar asli memiliki resolusi tidak seragam". Dataset tidak diganti karena pipeline EuroSAT sudah kuat, reproducible, dan bebas data leakage, meskipun test accuracy run penuh final belum mencapai 95%.
-
-## Ringkasan Metode
-
-Notebook menjalankan alur berikut:
-
-1. Setup seed dan path relatif repository.
-2. Load EuroSAT RGB dari TensorFlow Datasets.
-3. Validasi metadata dataset: total gambar, jumlah kelas, nama kelas, split awal, shape, dan dtype.
-4. Export dataset ke `dataset/raw/<class_name>/`.
-5. Membuat split stratified ke `dataset/train/`, `dataset/validation/`, dan `dataset/test/`.
-6. Audit dataset untuk distribusi kelas, format, mode, resolusi, file corrupt, duplikasi dalam split, dan duplikasi antar split.
-7. Membuat pipeline `tf.data` untuk train, validation, dan test.
-8. Menerapkan data augmentation hanya di alur training melalui layer Keras.
-9. Melatih baseline CNN Sequential dan MobileNetV2 transfer learning.
-10. Memilih model berdasarkan validation accuracy.
-11. Melakukan fine-tuning sebagian layer atas MobileNetV2 dengan learning rate kecil.
-12. Evaluasi final pada test set.
-13. Export model ke SavedModel, TFLite, dan TFJS.
-
-## Hasil Evaluasi
-
-Run lokal terakhir memakai model terbaik berdasarkan validation set:
-
-| Metrik | Nilai |
-| --- | ---: |
-| Model terpilih | `mobilenetv2_finetuned` |
-| Train accuracy checkpoint | 0.9562 |
-| Validation accuracy checkpoint | 0.9396 |
-| Test accuracy | 0.9448 |
-| Test loss | 0.1753 |
-| Jumlah sampel test | 2.700 |
-
-Artefak evaluasi dihasilkan ke:
-
-```text
-outputs/evaluation/
-```
-
-Folder `outputs/` di-ignore oleh git karena berisi artefak hasil run, tetapi file tersebut dapat dibuat ulang dengan menjalankan notebook.
-
-## Export Model
-
-Export yang sudah tervalidasi pada run lokal:
-
-```text
-saved_model/eurosat_classifier/
-tflite/eurosat_classifier.tflite
-tflite/label.txt
-tfjs/eurosat_classifier/model.json
-tfjs/eurosat_classifier/group1-shard*.bin
-tfjs/eurosat_classifier/label.txt
-```
-
-Validasi export:
-
-- SavedModel dapat diload ulang dan menghasilkan prediksi shape `(1, 10)`.
-- TFLite dapat diload dengan interpreter dan menghasilkan prediksi shape `(1, 10)`.
-- TFJS graph model memiliki `model.json`, tiga shard `.bin`, dan output signature 10 kelas.
-- `tfjs/eurosat_classifier/label.txt` sama dengan `tflite/label.txt`.
-- Jumlah probabilitas prediksi mendekati 1.
-
-Catatan TFJS: `tensorflowjs` tidak dimasukkan langsung ke `requirements.txt` karena pip akan menarik `tensorflow-decision-forests` dan dapat memicu konflik dependency pada Windows/Python 3.12. Jika perlu membuat ulang export TFJS, install converter secara manual dengan dependency resolver dimatikan untuk package `tensorflowjs`:
-
-```bash
-python -m pip install tf_keras==2.21.0 tensorflow-hub==0.16.1 jax==0.4.34 jaxlib==0.4.34 "packaging~=23.1" "setuptools<81"
-python -m pip install --no-deps tensorflowjs==4.22.0
-```
-
-Pada environment lokal Windows/Python 3.12 ini, export TFJS paling stabil dilakukan sebagai TFJS graph model dari SavedModel inference-only sementara. Notebook membuat model inference-only tanpa layer augmentation untuk konversi TFJS, memvalidasi bahwa outputnya identik dengan model asli pada mode inference (`max_delta=0.0`), lalu menghasilkan folder `tfjs/eurosat_classifier/`.
 
 ## Cara Menjalankan Notebook
-
-1. Buat dan aktifkan virtual environment.
-2. Install dependency dari `requirements.txt`.
-3. Jalankan notebook dari root repository.
-4. Eksekusi cell dari atas ke bawah.
-
-Contoh:
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-jupyter notebook klasifikasi-gambar-eurosat.ipynb
+jupyter notebook klasifikasi-gambar-it-assets.ipynb
 ```
 
-Eksekusi pertama akan mengunduh EuroSAT RGB dan membuat folder dataset lokal. Dataset dan output run tidak perlu dimasukkan ke git.
+Notebook berisi alur dataset, modelling, evaluasi, inference proof, dan export. Test set tidak boleh digunakan untuk training, tuning, callback, checkpoint selection, atau model selection.
 
-## Cara Menjalankan Inference
-
-Jalankan cell bagian **Inference** di notebook setelah bagian evaluasi dan export selesai. Cell tersebut mengambil beberapa gambar dari `dataset/test/`, menampilkan:
-
-- input image;
-- true label;
-- predicted label;
-- confidence score;
-- status benar/salah.
-
-Hasil inference disimpan ulang ke:
+## Struktur Penting
 
 ```text
-outputs/evaluation/sample_inference.csv
-outputs/evaluation/sample_inference.png
-```
-
-## Struktur Repository
-
-```text
-submission-klasifikasi-gambar-eurosat/
-├── AGENTS.md
-├── README.md
-├── requirements.txt
-├── .gitignore
-├── klasifikasi-gambar-eurosat.ipynb
-├── dataset/
-├── notes/
-│   ├── DATASET_DECISION.md
-│   ├── FINAL_AUDIT.md
-│   ├── MODEL_SUMMARY.md
-│   ├── PROJECT_CONTEXT.md
-│   └── SUBMISSION_CHECKLIST.md
-├── outputs/
-├── saved_model/
-│   └── eurosat_classifier/
-├── tfds_data/
-├── tfjs/
-│   └── eurosat_classifier/
-│       ├── model.json
-│       ├── group1-shard*.bin
-│       └── label.txt
-└── tflite/
-    ├── eurosat_classifier.tflite
-    └── label.txt
+configs/openimages_it_assets_classes.json
+src/build_openimages_subset.py
+src/audit_openimages_subset.py
+src/split_openimages_subset.py
+src/audit_openimages_split.py
+klasifikasi-gambar-it-assets.ipynb
+notes/
+saved_model/it_asset_classifier/
+tflite/it_asset_classifier.tflite
+tfjs/it_asset_classifier/
 ```
 
 ## Reproducibility Notes
 
-- Semua path notebook relatif terhadap root repository.
-- Random seed utama: `42`.
-- Dataset split dibuat stratified per kelas.
-- Test set hanya dipakai pada evaluasi final dan sample inference.
-- Folder `dataset/`, `tfds_data/`, dan `outputs/` di-ignore karena dapat dibuat ulang dan ukurannya besar.
-- `requirements.txt` tidak diubah dalam audit ini.
+- Seed utama: `42`.
+- Semua path notebook dan script relatif terhadap root repository.
+- Augmentasi hanya diterapkan pada training pipeline.
+- Test set hanya digunakan untuk evaluasi final dan inference proof.
+- Dataset dan cache besar tidak dimasukkan ke git.
+- Hasil akurasi yang dilaporkan berasal dari output evaluasi real, bukan manipulasi manual.

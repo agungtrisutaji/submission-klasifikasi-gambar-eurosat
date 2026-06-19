@@ -43,6 +43,13 @@ openimages_data/
 fiftyone/
 tfds_data/
 outputs/
+checkpoints/
+
+# Locally generated IT Asset export artifacts exceed GitHub's 100 MB file limit.
+# Keep them for local validation/submission packaging, but do not push via normal Git.
+saved_model/it_asset_classifier/
+tflite/it_asset_classifier.tflite
+tfjs/it_asset_classifier/
 
 # Archives
 *.zip

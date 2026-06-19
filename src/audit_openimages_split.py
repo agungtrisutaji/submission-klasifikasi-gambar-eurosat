@@ -12,7 +12,8 @@ from typing import Any
 
 
 SPLITS = ["train", "validation", "test"]
-EXPECTED_TOTAL_CROPS = 10000
+MIN_TOTAL_CROPS = 10000
+MIN_CROPS_PER_CLASS = 2000
 
 
 def parse_args() -> argparse.Namespace:
@@ -38,6 +39,18 @@ def parse_args() -> argparse.Namespace:
         "--split-summary-csv",
         type=Path,
         default=Path("outputs") / "dataset_audit" / "openimages_split_summary.csv",
+    )
+    parser.add_argument(
+        "--min-total-crops",
+        type=int,
+        default=MIN_TOTAL_CROPS,
+        help="Minimum total crop count required for modelling readiness.",
+    )
+    parser.add_argument(
+        "--min-crops-per-class",
+        type=int,
+        default=MIN_CROPS_PER_CLASS,
+        help="Minimum total crop count required for each active class.",
     )
     return parser.parse_args()
 
@@ -183,12 +196,18 @@ def write_split_summary(
     return summary_rows
 
 
-def build_audit(rows: list[dict[str, str]], expected_labels: list[str]) -> dict[str, Any]:
+def build_audit(
+    rows: list[dict[str, str]],
+    expected_labels: list[str],
+    min_total_crops: int,
+    min_crops_per_class: int,
+) -> dict[str, Any]:
     total_crop = len(rows)
     split_counts = Counter(row["local_split"] for row in rows)
     split_class_counts = Counter(
         (row["local_split"], row["local_label"]) for row in rows
     )
+    class_counts = Counter(row["local_label"] for row in rows)
     source_ids_by_split: dict[str, set[str]] = defaultdict(set)
     splits_by_source_id: dict[str, set[str]] = defaultdict(set)
     hash_rows_by_split: dict[tuple[str, str], list[dict[str, str]]] = defaultdict(list)
@@ -255,9 +274,19 @@ def build_audit(rows: list[dict[str, str]], expected_labels: list[str]) -> dict[
 
     blockers = []
     warnings = []
-    if total_crop != EXPECTED_TOTAL_CROPS:
+    if total_crop < min_total_crops:
         blockers.append(
-            f"Expected {EXPECTED_TOTAL_CROPS} total crops, found {total_crop}."
+            f"Expected at least {min_total_crops} total crops, found {total_crop}."
+        )
+    underfilled_classes = {
+        local_label: class_counts[local_label]
+        for local_label in expected_labels
+        if class_counts[local_label] < min_crops_per_class
+    }
+    if underfilled_classes:
+        blockers.append(
+            "One or more active classes are below the minimum crop target: "
+            f"{underfilled_classes}."
         )
     if not all_classes_in_all_splits:
         blockers.append("One or more active classes are missing from a split.")
@@ -284,7 +313,13 @@ def build_audit(rows: list[dict[str, str]], expected_labels: list[str]) -> dict[
 
     return {
         "total_crop": total_crop,
+        "min_total_crops": min_total_crops,
+        "min_crops_per_class": min_crops_per_class,
         "expected_labels": expected_labels,
+        "crop_count_per_class": {
+            local_label: class_counts[local_label]
+            for local_label in expected_labels
+        },
         "crop_count_per_split": dict(split_counts),
         "crop_count_per_split_per_class": {
             split_name: {
@@ -342,7 +377,12 @@ def main() -> None:
         raise ValueError(f"Invalid local_split values: {invalid_splits}")
 
     summary_rows = write_split_summary(args.split_summary_csv, rows, expected_labels)
-    audit = build_audit(rows, expected_labels)
+    audit = build_audit(
+        rows,
+        expected_labels,
+        min_total_crops=args.min_total_crops,
+        min_crops_per_class=args.min_crops_per_class,
+    )
     audit["split_summary_csv"] = args.split_summary_csv.as_posix()
     audit["split_summary"] = summary_rows
 

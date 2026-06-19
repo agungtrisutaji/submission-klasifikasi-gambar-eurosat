@@ -6,32 +6,42 @@ Dicoding Submission: Proyek Klasifikasi Gambar
 
 Course: Belajar Fundamental Deep Learning
 
-Dataset final: EuroSAT RGB
+Branch eksperimen:
+
+```text
+experiment/open-images-it-assets
+```
+
+Dataset final branch ini:
+
+```text
+Open Images V7 IT Asset Subset
+```
 
 Notebook utama:
 
 ```text
-klasifikasi-gambar-eurosat.ipynb
+klasifikasi-gambar-it-assets.ipynb
 ```
 
 ## Status Saat Ini
 
-Project sudah melewati tahap dataset preparation, modelling, training, evaluasi awal, dan export utama.
+Project sudah melewati dataset preparation, split audit, modelling, training, evaluasi final, inference proof, dan export utama.
 
 | Area | Status | Catatan |
 | --- | --- | --- |
-| Dataset selected | Done | EuroSAT RGB |
-| Dataset loaded/downloaded | Done | TFDS `eurosat/rgb` dengan mirror Zenodo bila URL bawaan bermasalah |
-| Metadata validated | Done | 27.000 gambar, 10 kelas, RGB 64x64x3 |
-| Train/validation/test split | Done | Stratified per kelas, 80/10/10, seed 42 |
-| Dataset audit | Done | Tidak ada corrupt image atau duplicate cross-split pada run lokal |
-| Modelling | Done | Baseline CNN, MobileNetV2 transfer learning, dan MobileNetV2 fine-tuning |
-| Evaluation | Done | Test accuracy run penuh final: 0.9448 |
-| Export | Done | SavedModel, TFLite, dan TFJS berhasil dibuat dan divalidasi |
+| Dataset selected | Done | Open Images V7 IT Asset Subset |
+| Dataset loaded/downloaded | Done | via FiftyOne Open Images V7 detections |
+| Crop dataset built | Done | 15.000 crop, 5 kelas |
+| Train/validation/test split | Done | group split by `source_image_id`, seed 42 |
+| Dataset audit | Done | leakage antar split 0, corrupt image 0 |
+| Modelling | Done | baseline Sequential CNN dan final transfer-learning ensemble |
+| Evaluation | Done | train 0.9973, validation 0.9554, test 0.9579 |
+| Export | Done | SavedModel, TFLite, dan TFJS dibuat dan divalidasi |
 
 ## Dataset Preparation
 
-Struktur dataset lokal yang dibuat notebook:
+Struktur dataset lokal:
 
 ```text
 dataset/
@@ -44,61 +54,50 @@ dataset/
 Split:
 
 ```text
-train: 21.600 images
-validation: 2.700 images
-test: 2.700 images
+train: 12002 crops
+validation: 1502 crops
+test: 1496 crops
 seed: 42
-method: stratified per class
+method: grouped by source_image_id
 ```
 
 Audit output:
 
 ```text
-outputs/dataset_audit/dataset_split_summary.csv
-outputs/dataset_audit/dataset_audit_summary.json
+outputs/dataset_audit/openimages_split_audit.json
+outputs/dataset_audit/openimages_split_summary.csv
 ```
 
 ## Model
 
-Model yang dibandingkan:
+Model final:
 
-1. Baseline CNN.
-2. MobileNetV2 transfer learning dengan base model frozen.
-3. MobileNetV2 fine-tuning dari checkpoint transfer learning terbaik.
+```text
+EfficientNetV2B1 + EfficientNetV2B2 + EfficientNetV2B3 + ConvNeXtTiny
+```
 
 Model kandidat dipilih berdasarkan validation accuracy, bukan test accuracy.
 
-Model terbaik pada run penuh final:
-
-```text
-mobilenetv2_finetuned
-```
-
 ## Evaluation
 
-Ringkasan run penuh final:
+Ringkasan run final:
 
 ```text
-train accuracy checkpoint: 0.9562
-validation accuracy checkpoint: 0.9396
-test accuracy: 0.9448
-test loss: 0.1753
-test samples: 2.700
+train accuracy: 0.9973
+validation accuracy: 0.9554
+test accuracy: 0.9579
 ```
 
-Test set hanya digunakan pada bagian evaluasi akhir dan sample inference.
+Test set hanya digunakan pada evaluasi akhir dan sample inference.
 
 ## Export
 
 Export yang tervalidasi:
 
 ```text
-saved_model/eurosat_classifier/
-tflite/eurosat_classifier.tflite
-tflite/label.txt
-tfjs/eurosat_classifier/model.json
-tfjs/eurosat_classifier/group1-shard*.bin
-tfjs/eurosat_classifier/label.txt
+saved_model/it_asset_classifier/
+tflite/it_asset_classifier.tflite
+tfjs/it_asset_classifier/
 ```
 
-TFJS export membutuhkan package `tensorflowjs`, tetapi package tersebut tidak dimasukkan langsung ke `requirements.txt` karena resolver pip menarik `tensorflow-decision-forests` yang bentrok pada Windows/Python 3.12. Pada run lokal, TFJS berhasil dibuat sebagai graph model dari SavedModel inference-only sementara dengan output signature 10 kelas.
+Risiko utama saat ini adalah ukuran export ensemble yang besar.
