@@ -44,6 +44,7 @@ fiftyone/
 tfds_data/
 outputs/
 checkpoints/
+submission_it_assets/
 
 # Locally generated IT Asset export artifacts exceed GitHub's 100 MB file limit.
 # Keep them for local validation/submission packaging, but do not push via normal Git.
