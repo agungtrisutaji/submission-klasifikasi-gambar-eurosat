@@ -5,7 +5,7 @@
 | Notebook .ipynb ada | OK | `klasifikasi-gambar-it-assets.ipynb` tersedia. |
 | Notebook sudah dijalankan | OK | Semua code cell menyimpan output. |
 | Tidak ada output error notebook | OK | Audit notebook tidak menemukan output bertipe `error`. |
-| Identitas notebook | WARN | `Nama`, `Email`, dan `ID Dicoding` masih placeholder dan harus diisi manual sebelum submit. |
+| Identitas notebook | OK | `Nama`, `Email`, dan `ID Dicoding` sudah diisi. |
 | requirements.txt ada | OK | `requirements.txt` tersedia dan memuat dependency utama. |
 | SavedModel ada | OK | `saved_model/it_asset_classifier/saved_model.pb` dan `variables/` tersedia. |
 | TFLite ada | OK | `tflite/it_asset_classifier.tflite` tersedia. |
@@ -16,7 +16,7 @@
 | Tidak ada dataset/cache/venv/output | OK | Folder final tidak berisi `dataset/`, cache Open Images, `.venv/`, `outputs/`, atau `checkpoints/`. |
 | Tidak ada ZIP/RAR di dalam ZIP | OK | Folder final tidak berisi archive nested. |
 | Ukuran ZIP dicek | OK | Folder final sekitar 1.136 GB sebelum ZIP; ukuran ZIP dicek setelah kompresi. |
-| Risiko reject | WARN | Risiko utama adalah identitas notebook yang masih placeholder dan ukuran ZIP yang besar karena SavedModel, TFLite, dan TFJS ensemble. |
+| Risiko reject | WARN | Risiko utama adalah ukuran ZIP yang besar karena SavedModel, TFLite, dan TFJS ensemble. |
 
 ## Validation Summary
 
@@ -36,4 +36,4 @@
 
 The final archive is expected to be large because it includes all required export formats for a four-backbone ensemble. If the Dicoding upload portal rejects the file size, the next practical options are model distillation, single-backbone retraining, or a smaller export strategy.
 
-Before submitting, replace the notebook placeholders for `Nama`, `Email`, and `ID Dicoding` with the real Dicoding identity.
+Notebook identity has been filled with the final Dicoding identity.
