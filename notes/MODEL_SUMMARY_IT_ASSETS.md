@@ -1,77 +1,40 @@
-# Model Summary - Open Images IT Assets
+# Model Summary - IT Assets
 
-## Dataset
+Notebook final: `klasifikasi-gambar-it-assets.ipynb`
 
-Model final dilatih pada Open Images V7 IT Asset Subset berbasis crop bounding box.
+Runtime final:
 
-| Item | Value |
-| --- | ---: |
-| Total crop | 15.000 |
-| Classes | 5 |
-| Crop per class | 3.000 |
-| Train crop | 12.002 |
-| Validation crop | 1.502 |
-| Test crop | 1.496 |
-| Unique crop resolutions | 14.168 |
+- TensorFlow 2.21.0
+- GPU terdeteksi: `/physical_device:GPU:0`
+- Mixed precision dipakai saat training
+- Model evaluasi/export dibuat ulang sebagai clone `float32`
 
-Kelas final:
-
-- `camera`
-- `computer_keyboard`
-- `computer_monitor`
-- `laptop`
-- `mobile_phone`
-
-## Architecture
-
-Notebook tetap menyertakan baseline Sequential CNN dengan `Conv2D`, `MaxPooling2D`, dan `GlobalAveragePooling2D` untuk memenuhi requirement baseline yang mudah dibaca.
-
-Model final yang mencapai target akurasi adalah ensemble:
+Model final adalah `tf.keras.Sequential`:
 
 ```text
-EfficientNetV2B1 + EfficientNetV2B2 + EfficientNetV2B3 + ConvNeXtTiny
+Input 160x160x3
+EfficientNetV2B0 include_preprocessing=True
+Conv2D explicit_conv2d_requirement
+MaxPooling2D explicit_pooling_requirement
+GlobalAveragePooling2D
+Dropout
+Dense
+Dropout
+Dense softmax 5 kelas
 ```
 
-Inference final memakai horizontal-flip test-time augmentation. TTA dimasukkan ke graph Keras sebelum export sehingga SavedModel dan TFLite menghasilkan perilaku yang sama dengan evaluasi lokal.
+Data augmentation berada di model training saja. Setelah training/checkpoint dimuat, notebook membuat clone evaluasi/export tanpa augmentation layer agar SavedModel, TFLite, dan TFJS memakai graph inferensi yang sama.
 
-## Selection Rule
+Metrik final dari `model.evaluate`:
 
-Model dipilih berdasarkan validation accuracy tertinggi dari kandidat ensemble 15k. Test set tidak dipakai untuk memilih model.
+| Split | Accuracy | Loss |
+| --- | ---: | ---: |
+| Train | 0.9532 | 0.1860 |
+| Validation | 0.9427 | 0.2678 |
+| Test | 0.9160 | 0.4016 |
 
-Top validation candidate:
+Status:
 
-| Members | Validation accuracy |
-| --- | ---: |
-| EfficientNetV2B1 + EfficientNetV2B2 + EfficientNetV2B3 + ConvNeXtTiny | 0.9554 |
-
-## Final Metrics
-
-| Metric | Value |
-| --- | ---: |
-| Train accuracy | 0.9973 |
-| Validation accuracy | 0.9554 |
-| Test accuracy | 0.9579 |
-
-Semua target accuracy 95% terpenuhi pada run lokal ini.
-
-## Export Validation
-
-| Export | Status | Notes |
-| --- | --- | --- |
-| SavedModel | exported_and_validated | shape `[1, 5]`, prediction sum `1.0` |
-| TFLite | exported_and_validated | shape `[1, 5]`, prediction sum `1.0` |
-| TFJS | exported_and_validated | 5 output classes |
-
-Label files match:
-
-```text
-label.txt
-tflite/label.txt
-tfjs/it_asset_classifier/label.txt
-```
-
-## Risks
-
-- Artifact export sangat besar karena memakai ensemble empat backbone.
-- TFLite dan SavedModel melewati batas ukuran file GitHub normal jika dipush tanpa Git LFS; artefak IT Asset dibiarkan lokal/ignored untuk push biasa.
-- TensorFlow native Windows berjalan di CPU pada environment ini. PyTorch CUDA tersedia, tetapi pipeline akhir memakai TensorFlow/Keras untuk kompatibilitas export Dicoding.
+- Minimum Dicoding 85%: terpenuhi.
+- Target internal 95%: belum terpenuhi oleh model Sequential final.
+- Test set tidak dipakai untuk training, tuning, checkpoint selection, atau early stopping.

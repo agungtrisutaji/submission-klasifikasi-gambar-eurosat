@@ -27,6 +27,7 @@ share/python-wheels/
 
 # Virtual Environments
 .venv/
+.wsl-venv/
 venv/
 ENV/
 env/
@@ -36,6 +37,8 @@ venv.bak/
 # Jupyter Notebook
 .ipynb_checkpoints/
 */.ipynb_checkpoints/*
+.jupyter_runtime/
+.ipython_runtime/
 
 # Dataset, Open Images cache, and run outputs
 dataset/
