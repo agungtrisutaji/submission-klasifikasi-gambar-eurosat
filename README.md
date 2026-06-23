@@ -120,8 +120,6 @@ Contoh environment lokal yang dipakai untuk run final:
 
 ```bash
 export REQUIRE_GPU=1
-export REUSE_EXISTING_WEIGHTS=1
-export REUSE_EXISTING_SPLIT=1
 ```
 
 Di Google Colab, aktifkan runtime GPU terlebih dahulu, lalu jalankan notebook dari atas. Jika dataset dan checkpoint belum tersedia, notebook akan membuat split dan training penuh dari awal.
