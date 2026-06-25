@@ -3,103 +3,77 @@
 ## Audit Summary
 
 | Area | Status | Catatan |
-|---|---|---|
-| Instruksi wajib | ✅ | Notebook memiliki dataset pipeline, baseline Sequential CNN, Conv2D, pooling layer, training, evaluasi, inference, dan export. |
-| Kriteria tambahan | ✅ | Dataset 15.000 crop, 5 kelas, resolusi asli tidak seragam, train/test accuracy lebih dari 95%. |
-| Struktur folder | ✅ | Dataset lokal berada di `dataset/`, export di `saved_model/`, `tflite/`, dan `tfjs/`. |
-| Notebook/script berjalan | ✅ | Notebook JSON valid; script dataset/audit lolos `py_compile`. |
-| Dataset benar | ✅ | Open Images V7 IT Asset Subset, split group by `source_image_id`, leakage antar split 0. |
-| Model/evaluasi benar | ✅ | Model final dipilih dari validation set; test set hanya untuk evaluasi final. |
-| Screenshot/bukti lengkap | ✅ | Notebook menyiapkan plot history, confusion matrix, classification report, dan sample inference. |
-| README lengkap | ✅ | README sudah menjelaskan Open Images sebagai dataset final eksperimen dan EuroSAT sebagai baseline historis. |
-| requirements.txt lengkap | ✅ | Dependency utama sudah tersedia; TFJS export sudah tervalidasi di environment lokal. |
-| ZIP final benar | ⚠️ | ZIP final belum dibuat pada tugas ini. Ukuran artefak perlu dicek sebelum packaging. |
-| Risiko reject | ⚠️ | Risiko utama adalah ukuran export ensemble yang besar, bukan metrik akurasi. Artefak IT Asset tidak dipush via Git biasa karena melewati limit GitHub 100 MB. |
+|---|---:|---|
+| Instruksi wajib | OK | Notebook run-all terbaru menampilkan source data, split manual, Sequential final, training, evaluasi langsung, report, export, dan inference. |
+| Kriteria tambahan | WARNING | Dataset 15,000 crop dan 5 kelas tersedia. Target minimal 85% tercapai; target bintang 5 95% untuk test accuracy belum aman. |
+| Struktur folder | OK | Script Open Images, config, notebook, notes, dan export path tersedia di workspace. |
+| Notebook/script berjalan | OK | `audit_notebook.py` menemukan 0 unrun cell, 0 output error, dan 0 warning. |
+| Dataset benar | OK | Dataset berasal dari Open Images V7 detection crops dan notebook memulai dari `dataset/raw/<class_name>/`. |
+| Model/evaluasi benar | OK | Notebook memakai final `tf.keras.Sequential` dengan Conv2D/pooling eksplisit dan evaluasi langsung dari `model.evaluate(...)`. |
+| README lengkap | OK | README menjelaskan acquisition, split manual, model final, evaluasi langsung, export, dan guardrail ZIP. |
+| requirements.txt lengkap | OK | Run-all dilakukan di WSL Python 3.12, TensorFlow 2.19.0, GPU terdeteksi. |
+| ZIP final benar | WARNING | ZIP belum boleh dibuat sebelum notebook run-all dan export validator valid. |
+| Risiko reject | WARNING | Risiko utama: ZIP belum dibuat/audit, helper sementara harus dihapus, dan test accuracy sequential belum mencapai 95%. |
+
+## Reviewer Feedback Mapping
+
+| Feedback | Status | Evidence |
+| --- | ---: | --- |
+| Split train/validation/test terlihat di notebook | Prepared | Notebook membuat `dataset/submission_split/...` dari `dataset/raw/...` dengan seed 42. |
+| Script Open Images ikut submission | Prepared | Script ada di `src/` dan dicatat di `notes/DATASET_ACQUISITION.md`. |
+| Model final `tf.keras.Sequential` | Prepared | Cell model membuat `model = tf.keras.Sequential(...)`. |
+| Conv2D eksplisit | Prepared | Layer bernama `explicit_conv2d_requirement`. |
+| Pooling eksplisit | Prepared | Layer bernama `explicit_pooling_requirement`. |
+| `model.fit()` dijalankan | OK | Notebook run-all terbaru memiliki output training. |
+| Test accuracy dari `model.evaluate(test_ds)` | OK | Test accuracy terbaru 0.9439. |
+| Tidak memakai JSON/CSV lama sebagai sumber metrik | Prepared | JSON/CSV hanya disimpan setelah evaluasi langsung. |
+| Report dari `test_ds` langsung | OK | Cell report memakai `model.predict(test_ds)` dan notebook sudah run-all. |
+| Export dari model yang sama | OK | Export summary terbaru valid untuk SavedModel, TFLite, dan TFJS. |
+
+## Current Known Sequential Output
+
+Output lokal sequential dari run-all terbaru:
+
+| Metric | Value |
+| --- | ---: |
+| Train accuracy | 0.9293 |
+| Validation accuracy | 0.9275 |
+| Test accuracy | 0.9439 |
+
+Keputusan: cukup untuk target minimal Dicoding 85%, belum aman untuk target bintang 5 95%.
 
 ## Dataset Audit
 
-Audit split final menggunakan 15.000 crop Open Images V7 IT Asset Subset.
-
 | Check | Result |
 | --- | ---: |
-| Total crop | 15.000 |
-| Minimum total crop target | 10.000 |
-| Crop per class target | 3.000 |
-| Source image leakage across split | 0 |
-| Duplicate file hash across split | 0 |
+| Total source images | 15,000 |
+| Train images | 11,998 |
+| Validation images | 1,504 |
+| Test images | 1,498 |
 | Corrupt image count | 0 |
-| Missing crop path count | 0 |
-| Missing split crop path count | 0 |
-| Unique crop resolutions total | 14.168 |
+| Cross-split duplicate hash count | 0 |
+| Source image leakage across split | 0 |
+| Unique resolutions | 14,168 |
 | Ready for modelling | true |
 
-Split:
-
-| Split | Crop | Ratio |
-| --- | ---: | ---: |
-| Train | 12.002 | 0.8001 |
-| Validation | 1.502 | 0.1001 |
-| Test | 1.496 | 0.0997 |
-
-Crop per class:
-
-| Class | Crop |
-| --- | ---: |
-| laptop | 3.000 |
-| computer_keyboard | 3.000 |
-| mobile_phone | 3.000 |
-| computer_monitor | 3.000 |
-| camera | 3.000 |
-
-## Warning Reviewed
-
-Audit menemukan 2 duplicate file hash within split, semuanya berada di split `train`. Tidak ada duplicate hash antar split dan tidak ada leakage `source_image_id` antar split.
-
-Keputusan: warning ini tidak memblokir evaluasi final karena tidak menyentuh validation/test leakage. Untuk final polishing, duplicate within-train dapat dibuang dan split dibangun ulang, tetapi hasil saat ini sudah memenuhi guardrail utama anti-leakage.
-
-## Model Audit
-
-Model final:
-
-```text
-EfficientNetV2B1 + EfficientNetV2B2 + EfficientNetV2B3 + ConvNeXtTiny
-```
-
-| Metric | Result |
-| --- | ---: |
-| Train accuracy | 0.9973 |
-| Validation accuracy | 0.9554 |
-| Test accuracy | 0.9579 |
-
-Model selection dilakukan berdasarkan validation accuracy. Test set hanya digunakan untuk evaluasi akhir.
-
 ## Export Audit
+
+`validate_tf_exports.py .` result: OK.
 
 | Export | Status |
 | --- | --- |
 | SavedModel | exported_and_validated |
 | TFLite | exported_and_validated |
 | TFJS | exported_and_validated |
+| Label consistency | true |
 
-Export paths:
+## Before ZIP
 
-```text
-saved_model/it_asset_classifier/
-tflite/it_asset_classifier.tflite
-tfjs/it_asset_classifier/
+Wajib jalankan:
+
+```bash
+python .agents/skills/dicoding_local_workspace_skills/workspace-scripts/audit_notebook.py klasifikasi-gambar-it-assets.ipynb
+python .agents/skills/dicoding_local_workspace_skills/workspace-scripts/validate_tf_exports.py .
 ```
 
-## Submission Readiness
-
-Secara metrik dan kelengkapan artefak, eksperimen ini memenuhi target utama:
-
-- dataset lebih dari 10.000 gambar;
-- 5 kelas;
-- resolusi crop asli tidak seragam;
-- train accuracy lebih dari 95%;
-- test accuracy lebih dari 95%;
-- callback digunakan pada training head;
-- inference proof disiapkan di notebook;
-- SavedModel, TFLite, dan TFJS tersedia.
-
-Risiko tersisa: ukuran export ensemble sangat besar. Sebelum final ZIP, cek batas ukuran submission dan pertimbangkan model distillation atau single-backbone retraining bila ukuran harus diperkecil. Untuk GitHub, gunakan Git LFS atau biarkan artefak export IT Asset tetap lokal karena `saved_model/it_asset_classifier/variables/variables.data-00000-of-00001` dan `tflite/it_asset_classifier.tflite` melewati limit 100 MB.
+ZIP final boleh menjadi langkah berikutnya, tetapi harus dibuat dan diaudit terpisah agar folder besar/cache tidak ikut masuk.

@@ -2,17 +2,18 @@
 
 ## Dataset
 
-Model final dilatih pada Open Images V7 IT Asset Subset berbasis crop bounding box.
+Model final memakai Open Images V7 IT Asset Subset berbasis crop bounding box.
 
 | Item | Value |
 | --- | ---: |
-| Total crop | 15.000 |
+| Total crop source | 15,000 |
 | Classes | 5 |
-| Crop per class | 3.000 |
-| Train crop | 12.002 |
-| Validation crop | 1.502 |
-| Test crop | 1.496 |
-| Unique crop resolutions | 14.168 |
+| Crop per class | 3,000 |
+| Split ratio | 80/10/10 |
+| Seed | 42 |
+| Train crop | 11,998 |
+| Validation crop | 1,504 |
+| Test crop | 1,498 |
 
 Kelas final:
 
@@ -22,56 +23,74 @@ Kelas final:
 - `laptop`
 - `mobile_phone`
 
+Notebook memulai dari `dataset/raw/<class_name>/` dan membangun ulang split manual ke `dataset/submission_split/train|validation|test/<class_name>/`.
+
 ## Architecture
 
-Notebook tetap menyertakan baseline Sequential CNN dengan `Conv2D`, `MaxPooling2D`, dan `GlobalAveragePooling2D` untuk memenuhi requirement baseline yang mudah dibaca.
+Model final reviewer-visible adalah `tf.keras.Sequential`.
 
-Model final yang mencapai target akurasi adalah ensemble:
+Struktur utama:
 
 ```text
-EfficientNetV2B1 + EfficientNetV2B2 + EfficientNetV2B3 + ConvNeXtTiny
+Input
+data_augmentation
+EfficientNetV2B0 feature extractor
+Conv2D(name="explicit_conv2d_requirement")
+MaxPooling2D(name="explicit_pooling_requirement")
+GlobalAveragePooling2D
+Dropout
+Dense
+Dropout
+Dense softmax
 ```
 
-Inference final memakai horizontal-flip test-time augmentation. TTA dimasukkan ke graph Keras sebelum export sehingga SavedModel dan TFLite menghasilkan perilaku yang sama dengan evaluasi lokal.
+Layer `Conv2D` dan pooling eksplisit berada di luar pretrained backbone agar terlihat jelas memenuhi feedback reviewer.
 
-## Selection Rule
+## Training
 
-Model dipilih berdasarkan validation accuracy tertinggi dari kandidat ensemble 15k. Test set tidak dipakai untuk memilih model.
+Model final dilatih dengan `model.fit()` pada notebook utama.
 
-Top validation candidate:
+Callback:
 
-| Members | Validation accuracy |
-| --- | ---: |
-| EfficientNetV2B1 + EfficientNetV2B2 + EfficientNetV2B3 + ConvNeXtTiny | 0.9554 |
+- `ModelCheckpoint`
+- `EarlyStopping`
+- `ReduceLROnPlateau`
 
-## Final Metrics
+Checkpoint dan early stopping memonitor validation metric. Test set tidak dipakai untuk training, tuning, callback, checkpoint selection, atau model selection.
+
+## Direct Evaluation
+
+Notebook menghitung evaluasi langsung dengan:
+
+```python
+model.evaluate(train_eval_ds)
+model.evaluate(validation_ds)
+model.evaluate(test_ds)
+```
+
+Current local sequential output sebelum packaging final:
 
 | Metric | Value |
 | --- | ---: |
-| Train accuracy | 0.9973 |
-| Validation accuracy | 0.9554 |
-| Test accuracy | 0.9579 |
+| Train accuracy | 0.9293 |
+| Validation accuracy | 0.9275 |
+| Test accuracy | 0.9439 |
 
-Semua target accuracy 95% terpenuhi pada run lokal ini.
+Target minimal Dicoding 85% terpenuhi. Target bintang 5 95% untuk test accuracy belum aman pada run-all terbaru.
 
-## Export Validation
+## Report and Export
 
-| Export | Status | Notes |
-| --- | --- | --- |
-| SavedModel | exported_and_validated | shape `[1, 5]`, prediction sum `1.0` |
-| TFLite | exported_and_validated | shape `[1, 5]`, prediction sum `1.0` |
-| TFJS | exported_and_validated | 5 output classes |
+Classification report dan confusion matrix dibuat langsung dari `model.predict(test_ds)`, kemudian disimpan ke `outputs/evaluation/`.
 
-Label files match:
+Export dibuat dari model final yang sama:
 
 ```text
+saved_model/it_asset_classifier/
+tflite/it_asset_classifier.tflite
+tfjs/it_asset_classifier/
 label.txt
-tflite/label.txt
-tfjs/it_asset_classifier/label.txt
 ```
 
-## Risks
+Label file root, TFLite, dan TFJS harus konsisten.
 
-- Artifact export sangat besar karena memakai ensemble empat backbone.
-- TFLite dan SavedModel melewati batas ukuran file GitHub normal jika dipush tanpa Git LFS; artefak IT Asset dibiarkan lokal/ignored untuk push biasa.
-- TensorFlow native Windows berjalan di CPU pada environment ini. PyTorch CUDA tersedia, tetapi pipeline akhir memakai TensorFlow/Keras untuk kompatibilitas export Dicoding.
+Run-all terbaru memvalidasi SavedModel, TFLite, dan TFJS dari model final yang sama.

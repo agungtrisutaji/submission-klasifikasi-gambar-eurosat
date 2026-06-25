@@ -2,68 +2,65 @@
 
 ## Wajib / Basic
 
-- [x] Dataset minimal 1.000 gambar.
-- [x] Dataset final 15.000 crop.
+- [x] Dataset minimal 1,000 gambar.
+- [x] Dataset source Open Images V7 tersedia di `dataset/raw/<class_name>/`.
 - [x] Minimal 3 kelas; dataset final memiliki 5 kelas.
-- [x] Ada train/validation/test split.
-- [x] Notebook memakai dataset lokal `dataset/train`, `dataset/validation`, dan `dataset/test`.
-- [x] Model baseline menggunakan `Sequential`.
-- [x] Model baseline menggunakan `Conv2D`.
-- [x] Model baseline menggunakan pooling layer.
-- [x] Train accuracy lebih dari 85%.
-- [x] Test accuracy lebih dari 85%.
-- [x] Ada plot accuracy dan loss.
-- [x] Ada callback.
-- [x] Ada sample inference.
-- [x] Export SavedModel.
-- [x] Export TFLite.
-- [x] Export TFJS.
+- [x] Notebook membuat split manual train/validation/test ke `dataset/submission_split/`.
+- [x] Notebook load dataset dari hasil split manual dengan `image_dataset_from_directory`.
+- [x] Model final menggunakan `tf.keras.Sequential`.
+- [x] Model final memiliki `Conv2D` eksplisit bernama `explicit_conv2d_requirement`.
+- [x] Model final memiliki pooling eksplisit bernama `explicit_pooling_requirement`.
+- [x] Model final memiliki cell `model.fit()`.
+- [x] Notebook memiliki plot accuracy/loss dari `history`.
+- [x] Notebook memiliki callback `ModelCheckpoint`, `EarlyStopping`, dan `ReduceLROnPlateau`.
+- [x] Notebook memiliki sample inference.
+- [x] Notebook memiliki cell export SavedModel.
+- [x] Notebook memiliki cell export TFLite.
+- [x] Notebook memiliki cell export TFJS.
+- [x] Notebook run-all terbaru selesai tanpa error.
 
-## Tambahan / Skilled
+## Evaluasi Langsung
 
-- [x] Dataset bukan dataset latihan Dicoding.
-- [x] Dataset minimal 10.000 gambar/crop.
-- [x] Split menjaga `source_image_id` agar tidak bocor antar split.
-- [x] Source image leakage antar split 0.
-- [x] Duplicate hash antar split 0.
-- [x] Corrupt image count 0.
-- [x] Metadata crop dan metadata split tersimpan.
-- [x] Class names konsisten untuk model, TFLite labels, dan TFJS labels.
-- [x] Classification report tersedia.
-- [x] Confusion matrix tersedia.
+- [x] Train accuracy dihitung dengan `model.evaluate(train_eval_ds)`.
+- [x] Validation accuracy dihitung dengan `model.evaluate(validation_ds)`.
+- [x] Test accuracy dihitung dengan `model.evaluate(test_ds)`.
+- [x] Classification report dibuat dari `model.predict(test_ds)`.
+- [x] Confusion matrix dibuat dari `model.predict(test_ds)`.
+- [x] JSON/CSV evaluasi hanya disimpan setelah direct evaluation.
+
+## Dataset Acquisition
+
+- [x] `src/build_openimages_subset.py`
+- [x] `src/audit_openimages_subset.py`
+- [x] `src/split_openimages_subset.py`
+- [x] `src/audit_openimages_split.py`
+- [x] `configs/openimages_it_assets_classes.json`
+- [x] `notes/DATASET_LICENSE.md`
+- [x] `notes/DATASET_ACQUISITION.md`
 
 ## Advanced / Bintang 5
 
-- [x] Dataset memiliki resolusi asli/crop tidak seragam.
-- [x] Train accuracy lebih dari 95%.
-- [x] Validation accuracy lebih dari 95%.
-- [x] Test accuracy lebih dari 95%.
-- [x] Model selection berdasarkan validation set.
+- [x] Dataset minimal 10,000 gambar/crop.
+- [x] Dataset memiliki 5 kelas.
+- [x] Notebook memeriksa corrupt image count.
+- [x] Notebook memeriksa duplicate hash antar split.
 - [x] Test set tidak dipakai untuk training, tuning, callback, checkpoint selection, atau model selection.
-- [x] SavedModel divalidasi reload/inference.
-- [x] TFLite divalidasi dengan interpreter.
-- [x] TFJS divalidasi melalui `model.json`, output class, dan label file.
+- [ ] Test accuracy direct evaluation >= 95% pada run-all terbaru.
+- [x] SavedModel valid pada run-all terbaru.
+- [x] TFLite valid pada run-all terbaru.
+- [x] TFJS valid pada run-all terbaru.
 
 ## Risiko Reject
 
-- [ ] Ukuran export final perlu dicek terhadap batas submission/hosting.
-- [ ] Jika harus push artefak model ke GitHub, gunakan Git LFS atau model lebih kecil.
-- [ ] Duplicate hash within-train berjumlah 2 dapat dibersihkan untuk polishing, meskipun tidak menyebabkan leakage antar split.
-- [ ] ZIP final belum dibuat pada tugas ini.
-
-## Bukti yang Harus Disertakan
-
-- [x] `outputs/evaluation/15k_ensemble_eval.json`
-- [x] `outputs/evaluation/15k_classification_report.csv`
-- [x] `outputs/evaluation/15k_confusion_matrix.csv`
-- [x] `outputs/export/it_asset_export_summary.json`
-- [x] `notes/MODEL_SUMMARY_IT_ASSETS.md`
-- [x] `notes/FINAL_AUDIT_IT_ASSETS.md`
+- [x] Notebook run-all terbaru sudah selesai tanpa error.
+- [ ] Target bintang 5 95% untuk test accuracy belum aman pada output sequential lokal terakhir.
+- [ ] ZIP final belum dibuat dan belum diaudit.
+- [ ] Jangan masukkan dataset/cache/.venv/checkpoint/.git/nested archive ke ZIP.
 
 ## Final Check Sebelum ZIP
 
-- [ ] Jalankan notebook dari atas ke bawah jika ingin output cell final tersimpan ulang.
-- [ ] Pastikan `dataset/`, `openimages_data/`, `fiftyone/`, `outputs/`, `.venv/`, `checkpoints/`, dan archive sementara tidak masuk ZIP.
-- [ ] Pastikan export model final yang wajib ada tetap ikut ZIP lokal, meskipun tidak ikut push Git biasa.
-- [ ] Pastikan ukuran ZIP masih masuk batas upload Dicoding.
-- [ ] Pastikan README tidak lagi membingungkan EuroSAT baseline dengan Open Images final.
+- [x] Jalankan notebook dari atas ke bawah.
+- [x] Jalankan `audit_notebook.py`.
+- [x] Jalankan `validate_tf_exports.py`.
+- [ ] Hapus helper sementara seperti `tmp_write_it_asset_notebook.py`.
+- [ ] Audit isi ZIP sebelum upload.
